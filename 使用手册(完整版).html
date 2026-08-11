@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>精神药物服药单 APP · 使用手册</title>
+<style>
+*{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.section,.card,.tip,.warn,.kbd,.pill,.step,.faq,.toc,.hero,li,tr,table,pre,blockquote{break-inside:avoid}
+@page{margin:14mm}
+
+  :root{--blue:#2563eb;--blue2:#1d4ed8;--bg:#f5f7fb;--card:#fff;--line:#e5e7eb;--text:#1f2937;--sub:#6b7280;--green:#15803d;--red:#b91c1c;--blue-l:#1d4ed8}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;-webkit-text-size-adjust:100%}
+  .wrap{max-width:760px;margin:0 auto;padding:18px 16px 60px}
+  header{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;border-radius:16px;padding:22px 20px;margin-bottom:16px}
+  header h1{margin:0 0 6px;font-size:21px}
+  header p{margin:0;opacity:.92;font-size:14px}
+  .quick{background:#fff8e6;border:1px solid #fde68a;border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:14px}
+  .quick b{color:#b45309}
+  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px 18px;margin-bottom:14px}
+  h2{font-size:18px;margin:0 0 10px;padding-left:11px;border-left:4px solid var(--blue);line-height:1.3}
+  h3{font-size:15px;margin:16px 0 6px;color:var(--blue2)}
+  p{margin:8px 0}
+  .step{margin:10px 0;padding-left:30px;position:relative}
+  .step:before{content:attr(data-n);position:absolute;left:0;top:1px;width:22px;height:22px;background:var(--blue);color:#fff;border-radius:50%;font-size:12px;display:flex;align-items:center;justify-content:center;font-weight:700}
+  .num{display:inline-block;min-width:20px;color:var(--blue2);font-weight:700}
+  ul{margin:8px 0;padding-left:20px}
+  li{margin:5px 0}
+  code{background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:5px;font-size:13px}
+  .btn{display:inline-block;background:var(--blue);color:#fff;border-radius:8px;padding:7px 12px;font-size:14px;margin:2px 0}
+  .tag{display:inline-block;background:#eef2ff;color:var(--blue2);border-radius:6px;padding:2px 8px;font-size:13px;margin:2px 3px 2px 0}
+  .warn{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:11px 13px;font-size:14px;margin:10px 0}
+  .ok{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:10px;padding:11px 13px;font-size:14px;margin:10px 0}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0;font-size:13px}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .sw{width:14px;height:14px;border-radius:3px;display:inline-block;border:1px solid #ccc}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+  th,td{border:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+  th{background:#f1f5f9}
+  .foot{text-align:center;color:var(--sub);font-size:12px;margin-top:20px}
+  a{color:var(--blue2)}
+  .hr{height:1px;background:var(--line);margin:14px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>精神药物服药单 APP · 使用手册</h1>
+  <p>把纸质精神科服药单搬进手机：按「日期 × 早 / 中 / 晚 × 药物」记录，支持停药标色、血药浓度、机构/科室与住院/门诊管理。</p>
+</header>
+
+<div class="quick">
+  <b>一句话上手：</b> 用手机浏览器打开下方链接 → 新建自己的账号 → 新建病人 → 在「服药单」里点 <code>＋ 药物</code> 添加药品 → 点格子填剂量即可。<br>
+  <b>应用链接：</b> <a href="https://swellwp.github.io/psych-meds/">https://swellwp.github.io/psych-meds/</a>（固定域名，永不变）
+</div>
+
+<!-- 1 -->
+<section>
+  <h2>一、如何打开并"装到桌面"</h2>
+  <p>本应用是一个网页（无需下载安装），数据保存在你自己的手机浏览器里。</p>
+  <h3>iPhone（Safari）</h3>
+  <div class="step" data-n="1">打开链接后，点底部工具栏的 <b>分享</b> 图标（方框带向上箭头）。</div>
+  <div class="step" data-n="2">下滑找到并点 <b>添加到主屏幕</b> → 命名（如"服药单"）→ 添加。以后像 APP 一样从桌面打开。</div>
+  <h3>安卓（Chrome / 系统浏览器）</h3>
+  <div class="step" data-n="1">打开链接，点右上角 <b>⋮</b> 菜单。</div>
+  <div class="step" data-n="2">点 <b>安装应用</b> 或 <b>添加到主屏幕</b> → 确认。</div>
+  <div class="warn">⚠️ <b>微信里打开的局限：</b>微信内置浏览器无法真正固定到桌面，且与系统浏览器是<b>两套互不连通的存储</b>。建议在<b>系统浏览器</b>中打开并添加到桌面；若已在微信里录入数据，换系统浏览器后请先用"数据 → 生成同步二维码 / 导入数据"把数据迁过去（见第七节）。</div>
+</section>
+
+<!-- 2 -->
+<section>
+  <h2>二、账号：多人共用、数据互不混淆</h2>
+  <p>首次打开会进入"账号选择页"。每个医生/使用者建立自己的账号，<b>各账号的病人数据完全隔离、互不可见</b>。</p>
+  <div class="step" data-n="1"><b>新建账号：</b>点 <code>＋ 新建账号</code> → 填姓名（如"张医生"）→ 可选设 4 位 PIN 密码（保护病历隐私）→ 创建并进入。</div>
+  <div class="step" data-n="2"><b>切换账号：</b>首页右上角"账号名 ▾"可切换；或"数据"菜单 → <code>切换账号</code>。</div>
+  <div class="step" data-n="3"><b>账号管理：</b>"数据"菜单 → <code>账号管理</code> → 可改名、设/改密码、删除账号。</div>
+  <div class="ok">同一台科室平板，也能多人各用各的账号，互不干扰。带 PIN 的账号进入时需输密码。</div>
+</section>
+
+<!-- 3 -->
+<section>
+  <h2>三、病人管理（机构 / 科室 / 住院·门诊）</h2>
+  <h3>新建病人</h3>
+  <div class="step" data-n="1">首页点右下角 <code>＋</code> 浮动按钮 → 打开"新建病人"表单。</div>
+  <div class="step" data-n="2">填<b>姓名</b>、<b>病案号</b>（稳定标识，一般不变）。</div>
+  <div class="step" data-n="3"><b>机构 / 科室：</b>下拉选择；列表里没有就选 <code>＋ 新建/其他…</code> 直接输入（如"嘉誉护理院 · 精神科门诊"）。新建科室时可选 <code>住院</code> 或 <code>门诊</code> 类型。</div>
+  <div class="step" data-n="4"><b>管理类型：</b>选 <code>住院</code> 或 <code>门诊</code>。住院病人需填床位号、入院日期、状态（在院/出院/死亡）；门诊病人无需床位，按随访管理。</div>
+  <div class="step" data-n="5"><b>诊断：</b>从常用精神科诊断中多选（也可留空）。</div>
+  <div class="step" data-n="6">点保存 → 病人出现在首页（按机构/科室分组）。</div>
+  <div class="ok"><b>床位可随入院记录变更：</b>同一病人不同时间可能住不同床、或换床/出院/死亡。点病人 → <code>编辑</code> → 在"入院记录"里增删记录（每次记录含床位号、入院日期、状态、出院日期）。同一床位不同时间住不同病人也正确——系统按"日期落在哪段入院区间"判定当天床位。</div>
+  <h3>编辑 / 删除</h3>
+  <ul>
+    <li>点病人进入详情 → 顶部 <code>编辑</code> 可改基本信息、入院记录、诊断。</li>
+    <li>在病人详情页底部点 <code>删除该病人</code> 可移除（谨慎操作，删除后不可恢复）。</li>
+  </ul>
+
+  <h3>换床 / 转科（保留完整住院轨迹）</h3>
+  <p>住院病人同科室换床、或转到其他科室时，<b>不用重新建病人</b>——系统保留一条完整的"住院轨迹"，可随时按日期回溯历史床位。</p>
+  <div class="step" data-n="1">在病人详情页点 <code>🛏 换床 / 转科</code> 按钮（门诊病人无此按钮）。</div>
+  <div class="step" data-n="2">弹出的面板有三个标签：</div>
+  <ul>
+    <li><b>换床</b>：填<b>新床位号</b>与<b>日期</b>。系统会关闭当前在院记录，并追加一条带"换床"标记的新的在院记录，原床位与轨迹都保留。</li>
+    <li><b>转科</b>：选择<b>目标科室</b>与日期。病人改挂到新科室，并追加一条带"转科"标记的在院记录；管理类型（住院/门诊）随之同步。</li>
+    <li><b>出院 / 死亡 / 转院</b>：选终末状态与日期；可勾选"同时隐藏该病人"（见下）。</li>
+  </ul>
+  <div class="ok">病人详情页的 <b>住院轨迹</b> 会列出每一次入院 / 换床 / 转科 / 出院，并标注类型与所属科室。卡片上的"入院 N 次"只统计真正的入院，换床 / 转科不计入；如发生过换床或转科，会额外提示"换床 / 转科 N 次"。</div>
+
+  <h3>出院 / 死亡后隐藏，但数据保留</h3>
+  <p>病人出院或死亡、暂时不再住院时，可把记录从首页隐藏；<b>病历数据完整保留</b>，随时可恢复。</p>
+  <div class="step" data-n="1"><b>方式一（出院时）</b>：在 <code>出院 / 死亡 / 转院</code> 面板勾选"同时隐藏该病人"，保存后即隐藏。</div>
+  <div class="step" data-n="2"><b>方式二（随时）</b>：病人详情页点 <code>🙈 隐藏记录</code>；已隐藏的病人点页面顶部的 <code>恢复显示</code> 横幅即可恢复。</div>
+  <div class="step" data-n="3">首页底部会出现一个<b>默认收起</b>的 <b>已隐藏病人</b> 分组，展开可查看或恢复；搜索时隐藏病人仍能被搜到（标记"已隐藏"并排在结果后面）。</div>
+
+  <h3>首页排序规则</h3>
+  <ul>
+    <li><b>科室顺序</b>：住院科室会<b>按名称里的数字自动排序</b>（如"一病区、二病区、三病区"依次排列，带数字的科室排在无数字的"心理门诊"等之前），无需手动调整。</li>
+    <li><b>住院病人</b>：在科室内<b>按床位号自然顺序</b>排列（如 3062 排在 3100 之前，是数值序而非字符串序），科室头标注"按床位"。</li>
+    <li><b>门诊病人</b>：<b>按疾病大类归集</b>（如焦虑障碍、抑郁障碍、双相及相关障碍等 DSM-5 大类），同一大类内<b>按姓名拼音顺序</b>排列；科室头标注"按病种"。</li>
+  </ul>
+</section>
+
+<!-- 4 -->
+<section>
+  <h2>四、服药单：填药、填剂量、停药标色</h2>
+  <h3>添加药物（含剂型 + 规格）</h3>
+  <div class="step" data-n="1">进入病人 → 切到 <code>服药单</code> 标签 → 点 <code>＋ 药物</code>。</div>
+  <div class="step" data-n="2">在搜索框输入或按分类（抗精神病药 / 抗抑郁药 / 心境稳定剂 / 镇静催眠抗焦虑 / 抗痴呆药 / 多动症药 / 物质依赖 / 其他常用药）选择药名。</div>
+  <div class="ok"><b>按诊断智能推荐：</b>打开"添加药物"时，顶部会按<b>该病人的诊断类别</b>和<b>你既往的录入历史</b>推荐常用药（如精神分裂症常用抗精神病药、双相常用心境稳定剂等）。点推荐项即可直接进入配置；无诊断时则回退到全局最常用药物。已在该病人服药单里的药不会重复推荐。</div>
+  <div class="step" data-n="3">弹出的表单里填：<b>剂型</b>（片剂/针剂/胶囊…）、<b>规格</b>（如 1mg / 25mg / 200mg）、<b>用药频率</b>、<b>服用方式</b>（口服/肌注…）。</div>
+  <div class="step" data-n="4">点 <code>添加到服药单</code>。</div>
+  <div class="warn">💡 <b>同一通用名可不同剂型/规格并存：</b>例如"利培酮 1mg 片剂 口服"和"利培酮 25mg 针剂 肌注"是两列；"喹硫平 25mg"与"喹硫平 200mg"可同时出现在单上。系统只在<b>通用名+剂型+规格完全相同</b>时才提示"已在服药单中"。</div>
+  <div class="ok"><b>库里没有的药：</b>在"添加药物"页底部的 <code>自定义</code> 输入框输入药名 → 点 <code>添加</code>，会自动加入你的药品库并进入服药单（见第六节）。</div>
+
+  <h3>列标题怎么看</h3>
+  <p>每列第一行是药名；第二行紧凑显示：<code>规格 剂型 频率 服药时机 方式</code>。例如：</p>
+  <p><span class="tag">喹硫平</span><br><span class="tag">200mg 片剂 tid 餐后 口服</span></p>
+
+  <h3>填剂量 / 停药</h3>
+  <div class="step" data-n="1">点某个"早/中/晚"格子 → 弹出快捷剂量（该药常用剂量 chips）或自己输入。</div>
+  <div class="step" data-n="2">点 <code>停药</code> 这一格会标<b>红底</b>，其后空格显示<b>浅红底</b>，直到你重新填入剂量，表示"停药及停用期间"。</div>
+  <div class="legend">
+    <span><i class="sw" style="background:#fee2e2;border-color:#fca5a5"></i>红底＝停药</span>
+    <span><i class="sw" style="background:#fef2f2;border-color:#fecaca"></i>浅红＝停用期间</span>
+  </div>
+  <div class="ok"><b>"同前（复制上日剂量）"：</b>某格点开后选 <code>同前（复制上日剂量）</code>，会自动把<b>上一日同时间段该药的实际剂量</b>填进来（不再显示容易误认为"停药"的"/"）；若之前没有记录则留空。剂量不变或要沿用前一日时，直接选它即可，不必重复输入。</div>
+
+  <h3>停药药物可隐藏（展示更简洁）</h3>
+  <p>某药停药后，若想在服药单上把它藏起来、只保留数据，可在该药列标题（点药名）→ 设置面板里点 <code>隐藏该药（停药后更简洁）</code>。隐藏后该药从服药单网格与打印中消失，但<b>所有剂量记录与血药浓度仍完整保留</b>。</p>
+  <div class="step" data-n="1"><b>隐藏：</b>点药名 → 设置面板 → <code>隐藏该药（停药后更简洁）</code>。</div>
+  <div class="step" data-n="2"><b>恢复：</b>服药单底部会出现一个 <b>已隐藏药物</b> 区域，点其中的药名 → <code>显示</code> 即可恢复。</div>
+
+  <h3>打印服药单</h3>
+  <div class="step" data-n="1">在 <code>服药单</code> 标签右上角点 <code>打印</code>。</div>
+  <div class="step" data-n="2">生成清晰的可打印服药单（含病人信息、日期轴、药物列、血药浓度说明）。用浏览器/系统"打印"功能可<b>另存为 PDF</b> 或直接打印，交予护士站或归档。</div>
+</section>
+
+<!-- 5 -->
+<section>
+  <h2>五、血药浓度（TDM）</h2>
+  <div class="step" data-n="1">进入病人 → 切到 <code>血药浓度</code> 标签 → 点 <code>添加血药浓度</code>。</div>
+  <div class="step" data-n="2">选药品、填<b>抽血日期</b>、<b>数值</b>与<b>单位</b>（ng/mL、μg/mL、mmol/L 等）→ 保存。</div>
+  <div class="step" data-n="3">也可在"服药单"里点某药列标题 → <code>记录血药浓度</code> 快速录入。</div>
+  <div class="ok"><b>记录可修改：</b>每条血药浓度右侧有 <code>✎ 编辑</code> 按钮，点开即预填原值，改完保存即可（<b>不必删除重填</b>）；<code>✕</code> 为删除。</div>
+  <p>保存后，<b>服药单网格会出现一行"血"</b>，自动按内置参考范围判读并标色：</p>
+  <div class="legend">
+    <span><i class="sw" style="background:#fecaca;border-color:#ef4444"></i>红＝偏高</span>
+    <span><i class="sw" style="background:#bfdbfe;border-color:#3b82f6"></i>蓝＝偏低</span>
+    <span><i class="sw" style="background:#bbf7d0;border-color:#22c55e"></i>绿＝正常</span>
+  </div>
+  <p class="muted" style="color:var(--sub);font-size:13px">内置参考范围的药物：锂盐、丙戊酸钠/镁、卡马西平、奥卡西平、拉莫三嗪、氯氮平、奥氮平、喹硫平、利培酮、帕利哌酮、阿立哌唑、氟哌啶醇、阿米替林、氯米帕明、多塞平等（添加药物时会提示"建议定期监测血药浓度"及参考区间）。</p>
+</section>
+
+<!-- 6 -->
+<section>
+  <h2>六、药品库维护（自定义药名）</h2>
+  <ul>
+    <li><b>内置药品库</b>已收录约 127 种常用精神科药物（8 大类），不可修改、不可删，保证底库稳定。</li>
+    <li><b>新增自定义药名：</b>在"添加药物"页输入库里没有的药名 → <code>添加</code>，会自动归入"我的药品"分类并持久保存，下次直接可选。</li>
+    <li><b>管理药品库：</b>"数据"菜单 → <code>管理药品库</code> → 列出你自定义的药名，可逐个删除（<b>注意：删除仅从药品库列表移除，已录入服药单中的该药不受影响</b>）。</li>
+  </ul>
+</section>
+
+<!-- 7 -->
+<section>
+  <h2>七、拍照识别录入（服药单 / 心理测评）</h2>
+  <div class="section">
+    <p>把纸质单子拍照，由你自己的大模型 API 自动识别并录入，省去手抄。</p>
+    <div class="step" data-n="1"><b>先配置识别设置：</b>数据管理 → <code>识别设置</code>，选服务商（OpenAI / 通义千问 / 腾讯混元 / 自定义兼容接口），填入 <b>Base URL、模型名、API Key</b>（仅存本机当前账号），保存。</div>
+    <div class="step" data-n="2"><b>识别服药单：</b>进入病人 → 服药单 → 点 <b>📷 识别</b> → 拍照或选图 → 等待识别 → 在「核对」页确认药物（可移除误识项）→ <b>确认导入</b>。系统按「通用名＋剂型＋规格」去重，并写入对应日期的早/中/晚剂量。</div>
+    <div class="step" data-n="3"><b>识别心理测评单：</b>进入病人 → 测评 → <b>＋ 新增测评</b> → 选量表 → <b>📷 拍照/上传识别</b> → 自动保存为一条测评记录（可在测评列表核对或删除）。</div>
+    <div class="tip">已内置 25 种常用量表，按功能分组、带标准判读（仅供参考，以临床判断为准）：<br>
+    · <b>认知功能</b>：MMSE、MoCA<br>
+    · <b>抑郁/焦虑</b>：HAMD、HAMA、SDS、SAS、PHQ-9、GAD-7<br>
+    · <b>精神症状/睡眠</b>：PANSS、PSQI、YMRS（杨氏躁狂）<br>
+    · <b>双相情感障碍</b>：MDQ（情绪障碍问卷·双相筛查）、BSDS（双相谱系诊断量表）、HCL-32（轻躁狂症状清单）、BDRS（双相抑郁评定量表）、FAST（功能评估简表）、CGI-BP（临床总体印象-双相改良版）<br>
+    · <b>强迫及相关障碍</b>：Y-BOCS（耶鲁-布朗强迫量表，10 项，总分 0-40，含「强迫思维 / 强迫行为」两维度）<br>
+    · <b>其他常用</b>：ADL、CDR、NPI、SCL-90、EPQ、MMPI、16PF</div>
+    <div class="ok"><b>SCL-90 填写说明：</b>「总分」填 <b>量表总分</b>（90 个条目之和，0-450）；「总均分」= 总分÷90，填总分后会自动算出，也可手填。任一篇因子分≥2 提示该因子阳性。</div>
+    <div class="ok"><b>测评填错不用删重填：</b>在测评列表点开某条记录 → 右下角 <code>编辑</code> 即可修改日期 / 总分 / 维度分 / 总均分，保存后覆盖原记录（不会新增重复条目）。</div>
+    <div class="warn">⚠️ 识别用的照片只在本次识别时发送一次到你所填的模型接口，<b>不进入本应用的数据库、也不经本应用服务器</b>；API Key 仅存本机。识别结果建议核对后再使用。</div>
+  </div>
+  <h2>八、数据同步与备份</h2>
+  <p>数据默认只存在本设备浏览器。<b>跨设备 / 跨浏览器</b>想复用，有三种方式（都只在设备间直传，<b>不经服务器</b>，保护病历隐私）：</p>
+  <h3>① 二维码同步（最方便）</h3>
+  <div class="step" data-n="1">在原设备"数据"菜单 → <code>生成同步二维码</code> → 用手机相机扫码，会自动打开带同步参数的链接并导入。</div>
+  <div class="step" data-n="2">若扫码未自动跳转，复制链接/文本，在目标设备"数据"菜单 → <code>粘贴同步码导入</code> 粘贴即可。</div>
+  <div class="warn">⚠️ 同步是<b>整盘覆盖</b>当前账号。目标设备已有数据时，请先确认哪边是最新，避免覆盖；数据量大时二维码容量有限，系统会提示改用下方"导出/导入"文件方式。</div>
+  <h3>② 导出 / 导入文件（最稳妥，推荐定期备份）</h3>
+  <div class="step" data-n="1"><b>备份：</b>"数据"菜单 → <code>导出全部数据（JSON 备份）</code> → 保存/转发这个 <code>.json</code> 文件。</div>
+  <div class="step" data-n="2"><b>恢复：</b>"数据"菜单 → <code>导入数据（从备份恢复）</code> → 选中备份文件 → 覆盖当前账号。</div>
+  <h3>③ 示例数据</h3>
+  <p>"数据"菜单 → <code>载入示例病人</code> 可体验（含住院与门诊示例）。</p>
+</section>
+
+<!-- 8 -->
+<section>
+  <h2>九、常见问题（FAQ）</h2>
+  <table>
+    <tr><th>问题</th><th>处理</th></tr>
+    <tr><td>换了手机/浏览器，原来的数据看不到了？</td><td>数据按"浏览器"隔离。在原设备用"生成同步二维码"或"导出全部数据"，再到新设备"粘贴同步码导入 / 导入数据"。</td></tr>
+    <tr><td>同名的药怎么出现两列？</td><td>只有"通用名+剂型+规格"完全相同时才会去重；不同剂型/规格（如 1mg 片 vs 25mg 针）本来就该并存，属正常。</td></tr>
+    <tr><td>血药浓度数值没变色？</td><td>该药可能无内置参考范围，或数值/单位填写不完整。可手动核对参考区间。</td></tr>
+    <tr><td>病人删错了能找回吗？</td><td>不能。请定期"导出全部数据"备份，误删可从备份恢复。</td></tr>
+    <tr><td>自定义药名想删？</td><td>"数据 → 管理药品库"删除（不影响已录入的服药单）。</td></tr>
+    <tr><td>多人共用一台平板怎么不混？</td><td>各自建账号；首页"账号名 ▾"切换，数据天然隔离。</td></tr>
+  </table>
+</section>
+
+<!-- 9 -->
+<section>
+  <h2>十、隐私与数据安全提示</h2>
+  <ul>
+    <li>所有病历数据<b>仅保存在使用者自己的浏览器本地</b>，不上传任何服务器（二维码同步也是设备间直传，不经过云端）。</li>
+    <li>清除浏览器缓存/卸载浏览器会丢失数据，请<b>定期"导出全部数据"备份</b>。</li>
+    <li>多人共用设备请使用独立账号，并为敏感账号设置 PIN 密码。</li>
+    <li>本工具为临床工作辅助记录，<b>不替代医嘱与正式病历</b>，用药调整请遵临床规范。</li>
+  </ul>
+</section>
+
+<div class="foot">精神药物服药单 APP · 使用手册 ｜ 应用链接：<a href="https://swellwp.github.io/psych-meds/">https://swellwp.github.io/psych-meds/</a>（固定域名，永不变）</div>
+
+</div>
+</body>
+</html>
