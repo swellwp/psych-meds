@@ -1,0 +1,3183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#0e7490">
+<title>精神药物服药单</title>
+<style>
+:root{
+  --primary:#0e7490; --primary-dark:#155e75; --primary-light:#ecfeff;
+  --bg:#f1f5f9; --card:#ffffff; --line:#cbd5e1; --line-light:#e2e8f0;
+  --text:#0f172a; --text-sub:#64748b; --danger:#dc2626; --warn:#d97706; --ok:#16a34a;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+#app{max-width:560px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;padding-bottom:90px}
+
+/* ---------- 顶栏 ---------- */
+.appbar{position:sticky;top:0;z-index:20;background:var(--primary);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 4px rgba(15,23,42,.2)}
+.appbar h1{font-size:18px;font-weight:600;flex:1;letter-spacing:.5px}
+.appbar .sub{font-size:12px;opacity:.85;font-weight:400;display:block;margin-top:2px}
+.appbar button{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;padding:7px 12px;font-size:14px}
+.backbtn{font-size:20px;line-height:1;padding:4px 10px 6px}
+
+/* ---------- 通用组件 ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--primary);color:#fff;border:none;border-radius:10px;padding:11px 18px;font-size:15px;font-weight:500;cursor:pointer}
+.btn:active{background:var(--primary-dark)}
+.btn-block{width:100%}
+.btn-ghost{background:#fff;color:var(--primary);border:1px solid var(--primary)}
+.btn-danger{background:#fff;color:var(--danger);border:1px solid var(--danger)}
+.btn-sm{padding:7px 12px;font-size:13px;border-radius:8px}
+.iconbtn{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:14px;color:var(--text);cursor:pointer}
+.fab{position:fixed;right:max(18px,calc(50% - 262px));bottom:26px;z-index:30;width:56px;height:56px;border-radius:50%;background:var(--primary);color:#fff;border:none;font-size:28px;line-height:1;box-shadow:0 4px 14px rgba(14,116,144,.45);cursor:pointer}
+.fab:active{background:var(--primary-dark)}
+.card{background:var(--card);border-radius:12px;padding:14px;margin:10px 14px;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+.muted{color:var(--text-sub);font-size:13px}
+.warn-tip{margin-top:10px;padding:10px 12px;background:#fff7e6;border:1px solid #ffe1a8;border-radius:9px;color:#8a5a00;font-size:12.5px;line-height:1.6}
+.warn-tip b{color:#7a4f00}
+.row{display:flex;align-items:center;gap:8px}
+.grow{flex:1}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
+.badge-ok{background:#dcfce7;color:#15803d}
+.badge-high{background:#fee2e2;color:#b91c1c}
+.badge-low{background:#dbeafe;color:#1d4ed8}
+.badge-na{background:#f1f5f9;color:#64748b}
+
+/* ---------- 首页 ---------- */
+.search-wrap{padding:12px 14px 4px}
+.search-wrap input{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:10px;font-size:16px;background:#fff}
+.pcard{background:#fff;border-radius:12px;margin:8px 14px;padding:14px;box-shadow:0 1px 3px rgba(15,23,42,.08);cursor:pointer;border-left:4px solid var(--primary)}
+.pcard:active{background:#f8fafc}
+.pcard .pname{font-size:17px;font-weight:600}
+.pcard .pmeta{color:var(--text-sub);font-size:13px;margin-top:4px}
+.pcard .pdiag{margin-top:6px;display:flex;flex-wrap:wrap;gap:5px}
+.dtag{background:var(--primary-light);color:var(--primary-dark);border-radius:6px;padding:2px 8px;font-size:12px}
+.empty{text-align:center;color:var(--text-sub);padding:60px 20px;font-size:14px}
+/* 机构/科室分组 */
+.ghead{background:#e2e8f0;border-radius:10px;margin:14px 14px 0;padding:11px 14px;display:flex;align-items:center;cursor:pointer}
+.ghead:active{background:#dbe3ec}
+.ghead .gc{font-size:12px;color:var(--text-sub);background:#fff;border-radius:10px;padding:1px 9px;margin-right:8px}
+.ghead .gn{font-size:15px;font-weight:600;flex:1}
+.ghead .gt{color:var(--text-sub);font-size:13px;transition:transform .2s;transform:rotate(0)}
+.ghead.collapsed .gt{transform:rotate(-90deg)}
+.subhead{display:flex;align-items:center;background:#f1f5f9;margin:8px 14px 0;padding:8px 12px;border-radius:9px;cursor:pointer}
+.subhead .sc{font-size:11px;color:var(--text-sub);margin-right:8px}
+.subhead .sn{font-size:13px;font-weight:500;flex:1}
+.subhead .add{background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:13px;padding:5px 11px;cursor:pointer}
+.subhead .add:active{background:var(--primary-dark)}
+.ocard{background:#fff;border-radius:9px;padding:6px 9px;font-size:12px;color:var(--text-sub);margin:4px 0 0;display:inline-block}
+/* 入院记录 / 床位变更 */
+.adm-row{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:#fafdfe}
+.adm-row .adm-head{display:flex;align-items:center;margin-bottom:8px}
+.adm-row .adm-head .t{font-size:13px;font-weight:600;flex:1}
+.adm-row .adm-head .x{background:none;border:none;color:#cbd5e1;font-size:16px;cursor:pointer;padding:2px 6px}
+.adm-grid{display:flex;gap:8px}
+.adm-grid .field{flex:1;margin-bottom:0}
+.adm-status.out{color:var(--text-sub)}
+.bedtag{display:block;font-size:10px;color:#0e7490;font-weight:600;margin-top:2px}
+.status-pill{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;background:#dcfce7;color:#15803d;margin-left:6px;vertical-align:1px}
+.status-pill.out{background:#f1f5f9;color:#64748b}
+/* 门诊/住院类型标签与说明 */
+.dtype{font-size:11px;color:var(--primary);background:var(--primary-light);border-radius:6px;padding:1px 7px;margin-left:6px;font-weight:500}
+.dtype.op{color:var(--text-sub);background:#f1f5f9}
+.opd-note{padding:12px;background:#f8fafc;border:1px dashed var(--line);border-radius:9px;margin-top:4px;line-height:1.6}
+/* ---------- 排序分组 / 隐藏 / 换床 ---------- */
+.sorthint{font-size:10px;color:var(--text-sub);background:#fff;border-radius:6px;padding:1px 6px;margin-left:6px}
+.dgrp{display:flex;align-items:center;gap:7px;margin:10px 18px 2px;font-size:12px;color:var(--text-sub);font-weight:500}
+.dgrp:before{content:"";flex:0 0 3px;height:12px;background:var(--primary);border-radius:2px;opacity:.55}
+.dgrp .dgc{background:#e2e8f0;border-radius:8px;padding:0 7px;font-size:10px}
+.ghead.hidden-head{background:#f1f5f9}
+.ghead.hidden-head .gn{color:var(--text-sub);font-weight:500}
+.hidden-tip{margin:6px 16px 0;font-size:12px;color:var(--text-sub);line-height:1.6}
+.pcard.arch{border-left-color:#cbd5e1;opacity:.72}
+.quick-acts{display:flex;gap:8px;padding:10px 14px 0;flex-wrap:wrap}
+.quick-acts button{flex:1;min-width:110px;background:#fff;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:9px 10px;font-size:13px;font-weight:500;cursor:pointer}
+.quick-acts button:active{background:#f1f5f9}
+.arch-banner{margin:10px 14px 0;padding:10px 12px;background:#f1f5f9;border:1px solid var(--line);border-radius:10px;font-size:13px;color:var(--text-sub);line-height:1.6}
+.arch-banner button{margin-left:8px;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:5px 11px;font-size:13px;cursor:pointer}
+.tr-now{background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:12px;font-size:14px}
+.tr-check{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px}
+.tr-check input{width:17px;height:17px}
+.adm-kind{font-size:10px;color:var(--primary);background:var(--primary-light);border-radius:6px;padding:1px 6px;margin-left:6px;font-weight:500}
+.adm-kind.sm{margin:0 5px 0 0}
+.adm-dept{font-size:10px;color:var(--text-sub);background:#f1f5f9;border-radius:6px;padding:1px 6px;margin-left:5px}
+
+/* ---------- 病人页 ---------- */
+.pinfo-bar{background:#fff;padding:12px 16px;border-bottom:1px solid var(--line-light)}
+.pinfo-bar .n{font-size:18px;font-weight:700}
+.pinfo-bar .m{color:var(--text-sub);font-size:13px;margin-top:3px;line-height:1.6}
+.tabs{position:sticky;z-index:15;background:#fff;display:flex;border-bottom:1px solid var(--line-light);top:calc(env(safe-area-inset-top,0px) + 66px)}
+.tabs button{flex:1;background:none;border:none;padding:12px 0;font-size:15px;color:var(--text-sub);border-bottom:2.5px solid transparent;cursor:pointer}
+.tabs button.on{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.toolbar{display:flex;gap:8px;padding:10px 14px;flex-wrap:wrap}
+
+/* ---------- 服药网格 ---------- */
+.grid-wrap{margin:0 10px 14px;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:10px;max-height:calc(100vh - 240px);-webkit-overflow-scrolling:touch}
+table.grid{border-collapse:separate;border-spacing:0;width:100%}
+table.grid th,table.grid td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:0}
+table.grid thead th{position:sticky;top:0;z-index:8;background:#f0f9ff}
+th.dcol{min-width:86px;max-width:128px;padding:6px 4px;cursor:pointer;vertical-align:middle}
+th.dcol .dn{font-size:13px;font-weight:600;color:var(--text);line-height:1.25;word-break:break-all}
+th.dcol .df{font-size:10px;color:var(--text-sub);margin-top:2px;font-weight:400;white-space:normal;line-height:1.3}
+th.corner{position:sticky;left:0;z-index:10;min-width:74px;background:#f0f9ff;font-size:12px;color:var(--text-sub);font-weight:500;padding:4px}
+td.datecol{position:sticky;left:0;z-index:6;background:#f8fafc;min-width:44px;text-align:center;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;vertical-align:middle;padding:2px}
+td.datecol .wk{display:block;font-size:10px;color:var(--text-sub);font-weight:400;margin-top:2px}
+td.slotcol{position:sticky;left:44px;z-index:6;background:#f8fafc;min-width:30px;text-align:center;font-size:12px;color:var(--text-sub);vertical-align:middle}
+th.corner2{position:sticky;left:44px;top:0;z-index:10;min-width:30px;background:#f0f9ff}
+td.cell{min-width:78px;height:38px;text-align:center;font-size:13px;cursor:pointer;background:#fff;vertical-align:middle}
+td.cell:active{background:var(--primary-light)}
+td.cell .v{color:var(--text)}
+td.cell .stop{color:var(--danger);font-weight:600}
+td.cell .same{color:#94a3b8}
+td.cell:empty::after{content:""}
+/* 停药与血药浓度配色 */
+td.cell.stop-cell{background:#fee2e2}
+td.cell.stopped-period{background:#fdf2f2}
+td.cell.tdm-high{background:#fee2e2}
+td.cell.tdm-low{background:#dbeafe}
+td.cell.tdm-ok{background:#f0fdf4}
+td.cell .tv{font-weight:700;font-size:12px;line-height:1.15}
+td.cell .tu{display:block;font-size:9px;color:var(--text-sub);line-height:1.15}
+td.cell.tdm-high .tv{color:#b91c1c}
+td.cell.tdm-low .tv{color:#1d4ed8}
+td.cell.tdm-ok .tv{color:#15803d}
+.dn-stop{color:#b91c1c}
+.stopbadge{display:inline-block;background:#dc2626;color:#fff;font-size:9px;border-radius:4px;padding:0 4px;margin-left:3px;font-weight:400;vertical-align:1px}
+.slot-blood{color:#0e7490 !important;font-weight:600}
+.cell-blood-empty{background:#fbfdff}
+.grid-legend{padding:0 14px 8px;font-size:12px;color:var(--text-sub);line-height:1.7}
+.hidden-meds{margin:6px 14px 14px;padding:10px 12px;background:#f8fafc;border:1px dashed var(--line);border-radius:12px}
+.hidden-meds .hm-t{font-size:13px;color:var(--text-sub);margin-right:4px}
+.hidden-meds .chip{font-size:13px;padding:5px 11px;background:#fff}
+.hidden-meds .hm-tip{font-size:11px;color:var(--text-sub);margin-top:7px}
+
+/* ---------- 底部弹层 ---------- */
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:50;opacity:0;pointer-events:none;transition:opacity .18s}
+.overlay.show{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:560px;margin:0 auto;background:#fff;border-radius:16px 16px 0 0;max-height:88vh;overflow-y:auto;transform:translateY(105%);transition:transform .22s ease-out;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 16px)}
+.sheet.show{transform:translateY(0)}
+.sheet-hd{display:flex;align-items:center;padding:14px 16px 10px;border-bottom:1px solid var(--line-light);position:sticky;top:0;background:#fff;z-index:2}
+.sheet-hd .t{font-size:16px;font-weight:600;flex:1}
+.sheet-hd .x{background:#f1f5f9;border:none;width:30px;height:30px;border-radius:50%;font-size:15px;color:var(--text-sub);cursor:pointer}
+.sheet-bd{padding:14px 16px}
+
+/* ---------- 表单 ---------- */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;color:var(--text-sub);margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;font-size:16px;background:#fff;font-family:inherit}
+.field input:focus,.field select:focus{outline:none;border-color:var(--primary)}
+.frow{display:flex;gap:10px}
+.frow .field{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 13px;border:1px solid var(--line);border-radius:20px;font-size:14px;background:#fff;cursor:pointer;color:var(--text)}
+.chip:active{transform:scale(.97)}
+.chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.chip.dose{background:var(--primary-light);border-color:#a5f3fc;color:var(--primary-dark);font-weight:500}
+.chip.warnchip{background:#fff7ed;border-color:#fdba74;color:#c2410c}
+.sect-t{font-size:13px;color:var(--text-sub);margin:16px 0 8px;font-weight:500}
+.sect-t:first-child{margin-top:0}
+/* 录入历史推荐 */
+.med-suggest{background:linear-gradient(135deg,#f0f9ff 0%,#faf5ff 100%);border:1px solid #c7d2fe;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:14px}
+.med-suggest.slim{padding:10px 12px;margin-bottom:10px}
+.med-suggest .med-sg-combo.on{background:var(--primary);color:#fff}
+.med-suggest .med-sg-combo.on .med-sg-cnt{background:rgba(255,255,255,.25);color:#fff}
+.med-suggest-t{color:var(--text-sub);font-size:12.5px;margin-bottom:8px}
+.med-suggest-t.mt8{margin-top:10px}
+.med-suggest-t b{color:var(--primary-dark);font-weight:600}
+.med-suggest-fields{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+.med-sg-chip{display:inline-flex;align-items:center;gap:3px;padding:5px 10px;background:#fff;border:1px solid #a5b4fc;border-radius:14px;font-size:12.5px;color:#4338ca;cursor:pointer;transition:all .15s}
+.med-sg-chip:hover{background:#eef2ff;border-color:#818cf8}
+.med-sg-chip:active{transform:scale(.96)}
+.med-suggest-combos{display:flex;flex-wrap:wrap;gap:6px}
+.med-sg-combo{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;background:#fff;border:1px solid var(--primary);border-radius:18px;font-size:13px;color:var(--primary-dark);cursor:pointer;font-weight:500;transition:all .15s}
+.med-sg-combo:hover{background:var(--primary);color:#fff}
+.med-sg-combo:active{transform:scale(.96)}
+.med-sg-cnt{font-size:11px;background:rgba(99,102,241,.15);color:#4338ca;padding:1px 6px;border-radius:9px;font-weight:600}
+.med-sg-combo:hover .med-sg-cnt{background:rgba(255,255,255,.25);color:#fff}
+/* 诊断分类（DSM-5 折叠分组） */
+.diag-fav{background:linear-gradient(135deg,#f0f9ff 0%,#faf5ff 100%);border:1px solid #c7d2fe;border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.diag-fav-t{color:var(--text-sub);font-size:12.5px;margin-bottom:8px}
+.diag-fav-items{display:flex;flex-wrap:wrap;gap:8px}
+.chip-cnt{font-style:normal;font-size:10.5px;margin-left:4px;opacity:.6;font-weight:600}
+.diag-groups{max-height:44vh;overflow:auto;-webkit-overflow-scrolling:touch;padding-right:2px}
+.diag-cat-row{border:1px solid var(--line-light);border-radius:10px;margin-bottom:8px;background:#fff;overflow:hidden}
+.diag-cat{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;cursor:pointer;font-weight:600;font-size:13.5px;color:var(--primary-dark);background:#f8fafc}
+.diag-cat-name{flex:1;line-height:1.3}
+.diag-cat-meta{display:flex;align-items:center;gap:8px;font-weight:500;font-size:12px;color:var(--text-sub)}
+.diag-cat-on{color:var(--primary);font-weight:600}
+.diag-caret{display:inline-block;transition:transform .15s;font-size:11px;color:var(--text-sub)}
+.diag-cat-row.collapsed .diag-caret{transform:rotate(-90deg)}
+.diag-items{padding:10px 10px 4px;display:flex;flex-wrap:wrap;gap:8px}
+.diag-cat-row.collapsed .diag-items{display:none}
+.diag-items .chip{margin-bottom:2px}
+
+/* ---------- 血药浓度 ---------- */
+.tdm-card{background:#fff;border-radius:12px;margin:10px 14px;padding:14px;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+.tdm-card .mn{font-weight:600;font-size:15px}
+.tdm-card .range{font-size:12px;color:var(--text-sub);margin-left:8px}
+.tdm-rec{display:flex;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line-light);font-size:14px}
+.tdm-rec:last-child{border-bottom:none}
+.tdm-rec .d{color:var(--text-sub);font-size:13px;width:86px}
+.tdm-rec .val{font-weight:600;margin-right:4px}
+.tdm-rec .u{color:var(--text-sub);font-size:12px;margin-right:8px}
+.tdm-rec .del{margin-left:auto;background:none;border:none;color:#cbd5e1;font-size:16px;cursor:pointer;padding:4px}
+.spark{margin-top:8px;background:#f8fafc;border-radius:8px;padding:6px}
+
+/* ---------- 数据管理 ---------- */
+.menu-item{display:flex;align-items:center;width:100%;background:#fff;border:1px solid var(--line-light);border-radius:10px;padding:14px;font-size:15px;margin-bottom:10px;cursor:pointer;text-align:left;color:var(--text)}
+.menu-item:active{background:#f8fafc}
+.menu-item .ic{margin-right:10px;font-size:17px}
+
+/* ---------- 提示 ---------- */
+.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:rgba(15,23,42,.88);color:#fff;padding:10px 20px;border-radius:22px;font-size:14px;z-index:99;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1}
+
+/* ---------- 打印 ---------- */
+#print-root{display:none}
+@media print{
+  #app,.overlay,.sheet,.fab,.toast{display:none !important}
+  #print-root{display:block;font-family:"PingFang SC","Microsoft YaHei",sans-serif;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{size:A4 landscape;margin:10mm}
+  #print-root h2{text-align:center;font-size:18px;margin-bottom:6px}
+  #print-root .pi{font-size:12px;margin-bottom:8px;line-height:1.8}
+  #print-root table{border-collapse:collapse;width:100%;font-size:11px}
+  #print-root th,#print-root td{border:1px solid #000;padding:3px 4px;text-align:center}
+  #print-root .dc{font-weight:700}
+  #print-root .tdm-line{margin-top:8px;font-size:12px;line-height:1.7}
+  #print-root td.stopc{background:#fdd5d5;color:#b91c1c;font-weight:700}
+  #print-root td.stopped{background:#fdecec}
+  #print-root td.high{background:#fdd5d5;color:#b91c1c;font-weight:700}
+  #print-root td.low{background:#d3e4fd;color:#1d4ed8;font-weight:700}
+  #print-root td.okc{color:#15803d;font-weight:700}
+  #print-root .plegend{margin-top:6px;font-size:10px;color:#333}
+}
+/* ---------- 二维码同步 ---------- */
+.qr-box{text-align:center;margin:14px 0;background:#fff;padding:14px;border-radius:12px;border:1px solid var(--line)}
+.qr-box svg{width:100%;max-width:260px;height:auto;display:inline-block}
+.sync-note{font-size:13px;color:var(--text-sub);line-height:1.7;margin:6px 0 12px}
+.sync-note b{color:var(--text)}
+.sync-warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:9px;padding:10px;font-size:13px;line-height:1.6;margin:10px 0}
+.code-box{word-break:break-all;font-family:monospace;font-size:11px;background:#f1f5f9;padding:10px;border-radius:8px;max-height:120px;overflow:auto;color:#475569}
+.divider{height:1px;background:var(--line-light);margin:10px 0}
+/* ---------- 多账号 ---------- */
+.acct-screen{max-width:420px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 40px) 22px}
+.acct-head h1{font-size:22px;font-weight:700;text-align:center}
+.acct-head p{text-align:center;margin-top:10px;line-height:1.7}
+.acct-list{margin-top:26px;display:flex;flex-direction:column;gap:12px}
+.acct-card{display:flex;align-items:center;width:100%;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;font-size:17px;cursor:pointer;color:var(--text);box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.acct-card:active{background:#f1f5f9}
+.acct-name{flex:1;text-align:left;font-weight:600}
+.acct-lock{font-size:16px}
+.acct-chip{background:rgba(255,255,255,.15) !important;max-width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-row{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line-light);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.acct-rowname{flex:1;font-size:15px;font-weight:500}
+.mb8{margin-bottom:8px}
+/* 测评与拍照识别 */
+.scale-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;cursor:pointer}
+.scale-card .sc-date{margin-left:auto;color:var(--text-sub);font-size:13px}
+.scale-card .row{display:flex;align-items:center;gap:8px}
+.scale-pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.lv{display:inline-block;padding:2px 10px;border-radius:20px;color:#fff;font-size:12px;margin-left:6px}
+.lv-red{background:#c0392b}.lv-orange{background:#e67e22}.lv-amber{background:#f39c12}.lv-green{background:#27ae60}
+.mini-grid{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px}
+.mini-grid th,.mini-grid td{border:1px solid var(--line);padding:3px 6px;text-align:center}
+.mini-grid th{background:#f4f6f8;font-weight:600}
+.ocr-med{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.ocr-med .row{display:flex;align-items:center;gap:8px}
+.ocr-med .btn-ghost{margin-left:auto}
+</style>
+
+</head>
+<body>
+<div id="app"></div>
+<div class="overlay" id="overlay"></div>
+<div class="sheet" id="sheet"></div>
+<div class="toast" id="toast"></div>
+<div id="print-root"></div>
+
+<script src="libs/lz-string.min.js"></script>
+<script src="libs/qrcode.js"></script>
+<script>
+/* ==================== 基础数据库 ==================== */
+var DRUG_LIB_DEFAULT = [
+{cat:"抗精神病药",drugs:[
+ {n:"利培酮",d:["0.25mg","0.5mg","1mg","1.5mg","2mg","3mg","4mg"],tdm:{u:"ng/mL",lo:20,hi:60,ref:"利培酮+9-羟利培酮"}},
+ {n:"帕利哌酮",d:["3mg","6mg","9mg","12mg"],tdm:{u:"ng/mL",lo:20,hi:60,ref:""}},
+ {n:"奥氮平",d:["1.25mg","2.5mg","5mg","7.5mg","10mg","15mg","20mg"],tdm:{u:"ng/mL",lo:20,hi:80,ref:""}},
+ {n:"喹硫平",d:["12.5mg","25mg","50mg","100mg","150mg","200mg","300mg","400mg"],tdm:{u:"ng/mL",lo:100,hi:500,ref:""}},
+ {n:"喹硫平缓释片",d:["50mg","150mg","200mg","300mg","400mg"]},
+ {n:"阿立哌唑",d:["1.25mg","2.5mg","5mg","10mg","15mg","20mg","30mg"],tdm:{u:"ng/mL",lo:150,hi:300,ref:""}},
+ {n:"氯氮平",d:["6.25mg","12.5mg","25mg","50mg","100mg","150mg","200mg"],tdm:{u:"ng/mL",lo:350,hi:500,ref:""}},
+ {n:"氨磺必利",d:["50mg","100mg","200mg","400mg","600mg","800mg"]},
+ {n:"舒必利",d:["0.1g","0.2g","0.3g","0.4g","0.6g"]},
+ {n:"齐拉西酮",d:["20mg","40mg","60mg","80mg"]},
+ {n:"鲁拉西酮",d:["20mg","40mg","80mg"]},
+ {n:"布南色林",d:["4mg","8mg","12mg","16mg","24mg"]},
+ {n:"哌罗匹隆",d:["4mg","8mg","12mg","16mg"]},
+ {n:"氯丙嗪",d:["12.5mg","25mg","50mg","100mg","200mg"]},
+ {n:"奋乃静",d:["2mg","4mg","8mg","12mg"]},
+ {n:"氟哌啶醇",d:["1mg","2mg","5mg","10mg"],tdm:{u:"ng/mL",lo:1,hi:10,ref:""}},
+ {n:"癸酸氟哌啶醇针",d:["25mg","50mg","100mg"]},
+ {n:"棕榈酸帕利哌酮针",d:["75mg","100mg","150mg"]},
+ {n:"利培酮微球针(长效)",d:["12.5mg","25mg","37.5mg","50mg"]},
+ {n:"月桂酰阿立哌唑针(长效)",d:["300mg","400mg"]},
+ {n:"氯普噻吨(泰尔登)",d:["12.5mg","25mg","50mg"]},
+ {n:"三氟拉嗪",d:["1mg","2mg","5mg","10mg"]},
+ {n:"氟奋乃静",d:["2mg","5mg"]},
+ {n:"氟奋乃静癸酸酯针",d:["25mg"]},
+ {n:"硫利达嗪",d:["25mg","50mg","100mg"]},
+ {n:"硫必利",d:["50mg","100mg"]},
+ {n:"氯哌噻吨(氯噻吨)",d:["3mg","15mg"]},
+ {n:"奥氮平口溶膜",d:["5mg","10mg"]}
+]},
+{cat:"抗抑郁药",drugs:[
+ {n:"舍曲林",d:["25mg","50mg","100mg","150mg","200mg"]},
+ {n:"氟西汀",d:["10mg","20mg","40mg","60mg"]},
+ {n:"帕罗西汀",d:["10mg","20mg","30mg","40mg"]},
+ {n:"氟伏沙明",d:["25mg","50mg","100mg","150mg","200mg"]},
+ {n:"西酞普兰",d:["5mg","10mg","20mg","30mg","40mg"]},
+ {n:"艾司西酞普兰",d:["2.5mg","5mg","10mg","15mg","20mg"]},
+ {n:"文拉法辛",d:["25mg","37.5mg","75mg","150mg","225mg"]},
+ {n:"文拉法辛缓释",d:["37.5mg","75mg","150mg","225mg"]},
+ {n:"度洛西汀",d:["20mg","30mg","60mg"]},
+ {n:"米氮平",d:["7.5mg","15mg","30mg","45mg"]},
+ {n:"米安色林",d:["15mg","30mg","60mg"]},
+ {n:"曲唑酮",d:["12.5mg","25mg","50mg","100mg","150mg"]},
+ {n:"阿戈美拉汀",d:["25mg","50mg"]},
+ {n:"伏硫西汀",d:["5mg","10mg","20mg"]},
+ {n:"安非他酮",d:["75mg","100mg","150mg"]},
+ {n:"瑞波西汀",d:["4mg"]},
+ {n:"噻奈普汀",d:["12.5mg"]},
+ {n:"路优泰(圣约翰草)",d:["300mg"]},
+ {n:"维拉唑酮",d:["20mg","40mg"]},
+ {n:"左旋米那普仑",d:["20mg","40mg","80mg"]},
+ {n:"马普替林",d:["25mg","50mg","75mg"]},
+ {n:"阿米替林",d:["12.5mg","25mg","50mg","75mg","100mg"],tdm:{u:"ng/mL",lo:80,hi:200,ref:"阿米替林+去甲替林"}},
+ {n:"氯米帕明",d:["12.5mg","25mg","50mg","75mg"],tdm:{u:"ng/mL",lo:175,hi:450,ref:"含去甲氯米帕明"}},
+ {n:"多塞平",d:["12.5mg","25mg","50mg","75mg"],tdm:{u:"ng/mL",lo:100,hi:300,ref:"多塞平+去甲多塞平"}},
+ {n:"吗氯贝胺",d:["150mg","300mg"]},
+ {n:"氟哌噻吨美利曲辛",d:["1片","2片"]}
+]},
+{cat:"心境稳定剂",drugs:[
+ {n:"碳酸锂",d:["0.125g","0.25g","0.5g","0.75g","1g"],tdm:{u:"mmol/L",lo:0.6,hi:1.2,ref:"治疗浓度，维持期0.4-0.8"}},
+ {n:"丙戊酸钠",d:["0.1g","0.2g","0.25g","0.5g","0.75g","1g"],tdm:{u:"μg/mL",lo:50,hi:100,ref:""}},
+ {n:"丙戊酸镁",d:["0.1g","0.2g","0.4g","0.6g"],tdm:{u:"μg/mL",lo:50,hi:100,ref:""}},
+ {n:"卡马西平",d:["0.1g","0.2g","0.3g","0.4g"],tdm:{u:"μg/mL",lo:4,hi:12,ref:""}},
+ {n:"奥卡西平",d:["0.15g","0.3g","0.45g","0.6g","0.9g"],tdm:{u:"μg/mL",lo:10,hi:35,ref:"MHD"}},
+ {n:"拉莫三嗪",d:["12.5mg","25mg","50mg","100mg","200mg"],tdm:{u:"μg/mL",lo:3,hi:14,ref:""}},
+ {n:"托吡酯",d:["25mg","50mg","100mg","200mg"]},
+ {n:"加巴喷丁",d:["100mg","300mg","400mg"]},
+ {n:"普瑞巴林",d:["25mg","50mg","75mg","100mg","150mg"]},
+ {n:"左乙拉西坦",d:["250mg","500mg","1000mg"]},
+ {n:"唑尼沙胺",d:["25mg","50mg","100mg"]}
+]},
+{cat:"镇静催眠与抗焦虑药",drugs:[
+ {n:"艾司唑仑",d:["0.5mg","1mg","2mg","3mg"]},
+ {n:"阿普唑仑",d:["0.2mg","0.4mg","0.8mg","1.2mg"]},
+ {n:"劳拉西泮",d:["0.25mg","0.5mg","1mg","1.5mg","2mg"]},
+ {n:"氯硝西泮",d:["0.25mg","0.5mg","1mg","2mg","4mg"]},
+ {n:"地西泮",d:["1.25mg","2.5mg","5mg","10mg"]},
+ {n:"奥沙西泮",d:["7.5mg","15mg","30mg"]},
+ {n:"硝西泮",d:["2.5mg","5mg","10mg"]},
+ {n:"氟西泮",d:["15mg","30mg"]},
+ {n:"夸西泮",d:["15mg"]},
+ {n:"替马西泮",d:["10mg","20mg"]},
+ {n:"溴西泮",d:["3mg","6mg"]},
+ {n:"水合氯醛",d:["10% 溶液"]},
+ {n:"唑吡坦",d:["5mg","10mg"]},
+ {n:"佐匹克隆",d:["3.75mg","7.5mg"]},
+ {n:"右佐匹克隆",d:["1mg","2mg","3mg"]},
+ {n:"扎来普隆",d:["5mg","10mg"]},
+ {n:"丁螺环酮",d:["5mg","10mg","15mg","30mg"]},
+ {n:"坦度螺酮",d:["10mg","20mg","30mg","60mg"]},
+ {n:"羟嗪",d:["25mg"]},
+ {n:"褪黑素",d:["1mg","2mg","3mg"]},
+ {n:"雷美尔通",d:["8mg"]}
+]},
+{cat:"抗痴呆药",drugs:[
+ {n:"多奈哌齐",d:["2.5mg","5mg","10mg"]},
+ {n:"卡巴拉汀",d:["1.5mg","3mg","4.5mg","6mg"]},
+ {n:"卡巴拉汀贴剂",d:["4.6mg","9.5mg","13.3mg"]},
+ {n:"美金刚",d:["5mg","10mg","15mg","20mg"]},
+ {n:"石杉碱甲",d:["0.1mg","0.2mg"]},
+ {n:"加兰他敏",d:["4mg","8mg","12mg"]},
+ {n:"甘露特钠(九期一)",d:["150mg","300mg","450mg"]},
+ {n:"司来吉兰",d:["5mg"]},
+ {n:"茴拉西坦",d:["0.1g"]},
+ {n:"奥拉西坦",d:["0.4g","0.8g"]},
+ {n:"吡拉西坦",d:["0.4g","0.8g","1.2g"]},
+ {n:"胞磷胆碱",d:["0.1g","0.2g"]},
+ {n:"银杏叶提取物",d:["40mg"]},
+ {n:"吡硫醇",d:["0.1g"]}
+]},
+{cat:"抗注意缺陷/多动药(ADHD)",drugs:[
+ {n:"盐酸哌甲酯(利他林)",d:["5mg","10mg"]},
+ {n:"盐酸哌甲酯缓释(专注达)",d:["18mg","27mg","36mg","54mg"]},
+ {n:"托莫西汀",d:["10mg","18mg","25mg","40mg","60mg"]},
+ {n:"胍法辛缓释",d:["1mg","2mg"]}
+]},
+{cat:"物质依赖与戒断用药",drugs:[
+ {n:"纳洛酮",d:["0.4mg"]},
+ {n:"纳曲酮",d:["50mg"]},
+ {n:"阿坎酸",d:["333mg"]},
+ {n:"双硫仑",d:["0.25g","0.5g"]},
+ {n:"美沙酮",d:["5mg","10mg"]},
+ {n:"丁丙诺啡",d:["0.2mg","0.4mg","0.8mg","2mg","4mg"]},
+ {n:"乙酰高牛磺酸钙",d:["0.5g"]}
+]},
+{cat:"其他常用药",drugs:[
+ {n:"苯海索",d:["1mg","2mg","4mg"]},
+ {n:"普萘洛尔",d:["10mg","20mg","30mg","40mg"]},
+ {n:"谷维素",d:["10mg","20mg","30mg"]},
+ {n:"东莨菪碱针",d:["0.3mg"]},
+ {n:"异丙嗪",d:["12.5mg","25mg","50mg"]},
+ {n:"苯巴比妥",d:["15mg","30mg","60mg","100mg"]},
+ {n:"金刚烷胺",d:["100mg"]},
+ {n:"甲钴胺",d:["0.5mg"]},
+ {n:"叶酸",d:["5mg"]},
+ {n:"维生素B6",d:["10mg"]},
+ {n:"舒肝解郁胶囊",d:["0.36g"]},
+ {n:"乌灵胶囊",d:["0.33g"]},
+ {n:"百乐眠胶囊",d:["0.27g"]},
+ {n:"解郁安神颗粒",d:["5g"]},
+ {n:"养血清脑颗粒",d:["4g"]}
+]}
+];
+/* 运行时药品库：首次用内置默认初始化，之后从 localStorage 读取（用户可维护）。
+   加载时会把内置默认中「用户库缺失」的新药合并进来，保证老用户也能看到扩充后的药品，同时保留其自定义药品。 */
+var DRUG_LIB = loadDrugLib();
+/* 将内置默认药品合并进已存药品库：分类匹配则补齐缺失药品，分类不存在则整类加入；用户自定义药(_user)始终保留 */
+function mergeDrugLib(saved,def){
+  var out=JSON.parse(JSON.stringify(saved));
+  for(var i=0;i<def.length;i++){
+    var dcat=def[i],found=null;
+    for(var j=0;j<out.length;j++){if(out[j].cat===dcat.cat){found=out[j];break;}}
+    if(!found){out.push(JSON.parse(JSON.stringify(dcat)));}
+    else{
+      for(var k=0;k<dcat.drugs.length;k++){
+        var nm=dcat.drugs[k].n,ex=false;
+        for(var x=0;x<found.drugs.length;x++){if(found.drugs[x].n===nm){ex=true;break;}}
+        if(!ex)found.drugs.push(JSON.parse(JSON.stringify(dcat.drugs[k])));
+      }
+    }
+  }
+  return out;
+}
+function loadDrugLib(){
+  try{
+    var raw=localStorage.getItem("psyMedSheet.druglib.v1");
+    if(raw){
+      var a=JSON.parse(raw);
+      if(Array.isArray(a)&&a.length){
+        var merged=mergeDrugLib(a,DRUG_LIB_DEFAULT);
+        try{localStorage.setItem("psyMedSheet.druglib.v1",JSON.stringify(merged))}catch(e){}
+        return merged;
+      }
+    }
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DRUG_LIB_DEFAULT));
+}
+function saveDrugLib(){try{localStorage.setItem("psyMedSheet.druglib.v1",JSON.stringify(DRUG_LIB))}catch(e){}}
+/* 把通用名写入用户药品库（仅在库中不存在时），用于持久化自定义药名 */
+function ensureDrug(name){
+  if(!name)return;
+  for(var i=0;i<DRUG_LIB.length;i++)for(var j=0;j<DRUG_LIB[i].drugs.length;j++)if(DRUG_LIB[i].drugs[j].n===name)return;
+  var cat=null;for(var k=0;k<DRUG_LIB.length;k++)if(DRUG_LIB[k].cat==="我的药品"){cat=DRUG_LIB[k];break}
+  if(!cat){cat={cat:"我的药品",drugs:[]};
+    DRUG_LIB.push(cat);
+  }
+  cat.drugs.push({n:name,d:[],_user:true});
+  saveDrugLib();
+}
+/* 删除用户自定义药品（内置项不可删） */
+function delUserDrug(name){
+  for(var i=0;i<DRUG_LIB.length;i++)for(var j=0;j<DRUG_LIB[i].drugs.length;j++){
+    if(DRUG_LIB[i].drugs[j].n===name&&DRUG_LIB[i].drugs[j]._user){
+      DRUG_LIB[i].drugs.splice(j,1);
+      if(DRUG_LIB[i].cat==="我的药品"&&DRUG_LIB[i].drugs.length===0)DRUG_LIB.splice(i,1);
+      saveDrugLib();return;
+    }
+  }
+}
+
+/* ==================== 通用录入历史推荐引擎 ====================
+   所有推荐一律从「当前账号的全部病人数据」实时派生：
+   - 部署前录入的历史数据立即生效，不需要迁移
+   - 不额外存储、不会重复计数
+   - 按账号天然隔离（store.data 本身就是按账号分库的）        */
+function topByMap(obj,n){
+  var arr=[];for(var k in obj)if(Object.prototype.hasOwnProperty.call(obj,k))arr.push([k,obj[k]]);
+  arr.sort(function(a,b){return b[1]-a[1]});return arr.slice(0,n);
+}
+function sgBump(map,v){if(v==null)return;v=String(v).trim();if(!v)return;map[v]=(map[v]||0)+1}
+function sgPatients(){return (store.data&&store.data.patients)?store.data.patients:[]}
+/* 通用推荐条：items=[{label,count,attrs:{k:v}}] */
+function sgBarHtml(title,items,action,opts){
+  if(!items||!items.length)return "";
+  opts=opts||{};
+  var h='<div class="med-suggest'+(opts.slim?' slim':'')+'">'+
+    '<div class="med-suggest-t">'+title+'</div>'+
+    '<div class="med-suggest-combos">';
+  items.forEach(function(it){
+    var at='';for(var k in it.attrs)if(Object.prototype.hasOwnProperty.call(it.attrs,k))at+=' data-'+k+'="'+esc(String(it.attrs[k]))+'"';
+    h+='<button type="button" class="med-sg-combo" data-action="'+action+'"'+at+'>'+esc(it.label)+
+       (it.count?' <span class="med-sg-cnt">×'+it.count+'</span>':'')+'</button>';
+  });
+  return h+'</div></div>';
+}
+/* 机构 · 科室：最常用的收治去向 */
+function getOrgDeptSuggestion(n){
+  var map={};
+  sgPatients().forEach(function(p){
+    var o=getOrg(p.orgId),d=getDept(p.orgId,p.deptId);
+    if(!o&&!d)return;
+    var key=(o?o.name:"")+"|"+(d?d.name:"");
+    if(key==="|")return;
+    map[key]=(map[key]||0)+1;
+  });
+  return topByMap(map,n||3).map(function(e){
+    var q=e[0].split("|");return {org:q[0],dept:q[1],count:e[1]};
+  });
+}
+/* 常用诊断 */
+function getDiagSuggestion(n){
+  var map={};
+  sgPatients().forEach(function(p){(p.diagnoses||[]).forEach(function(d){sgBump(map,d)})});
+  return topByMap(map,n||10).map(function(e){return {name:e[0],count:e[1]}});
+}
+/* 常用剂量：从全部病人服药单里、该药实际填过的格子值派生 */
+function getDoseSuggestion(medName,n){
+  var map={};
+  sgPatients().forEach(function(p){
+    var ids={};(p.meds||[]).forEach(function(m){if(m.name===medName)ids[m.id]=1});
+    (p.rows||[]).forEach(function(r){
+      if(!r.cells)return;
+      for(var mid in r.cells){
+        if(!Object.prototype.hasOwnProperty.call(r.cells,mid)||!ids[mid])continue;
+        var c=r.cells[mid];
+        ["m","n","e"].forEach(function(s){
+          var v=c[s];if(!v||v==="/"||v==="停")return;sgBump(map,v);
+        });
+      }
+    });
+  });
+  return topByMap(map,n||6).map(function(e){return {val:e[0],count:e[1]}});
+}
+/* 常用量表 */
+function getScaleSuggestion(n){
+  var map={};
+  sgPatients().forEach(function(p){(p.assessments||[]).forEach(function(a){sgBump(map,a.scale)})});
+  return topByMap(map,n||6).map(function(e){return {id:e[0],count:e[1]}})
+    .filter(function(x){return !!scaleById(x.id)});
+}
+/* 血药浓度常用备注 */
+function getTdmNoteSuggestion(n){
+  var map={};
+  sgPatients().forEach(function(p){(p.tdm||[]).forEach(function(t){sgBump(map,t.note)})});
+  return topByMap(map,n||5).map(function(e){return {val:e[0],count:e[1]}});
+}
+/* 全局药品字段习惯：某药无历史时用它兜底 */
+function getGlobalMedDefaults(){
+  var f={},fr={},r={};
+  sgPatients().forEach(function(p){(p.meds||[]).forEach(function(m){
+    sgBump(f,m.form);sgBump(fr,m.freq);sgBump(r,m.route);
+  })});
+  var tf=topByMap(f,1),tfr=topByMap(fr,1),tr=topByMap(r,1);
+  return {form:tf[0]?tf[0][0]:"",freq:tfr[0]?tfr[0][0]:"",route:tr[0]?tr[0][0]:""};
+}
+/* 从全部病人的服药单实时派生统计（含历史数据），并与增量记录合并 */
+function computeMedStats(){
+  var map={};
+  if(!store.data||!store.data.patients)return map;
+  store.data.patients.forEach(function(p){
+    (p.meds||[]).forEach(function(m){
+      var name=m.name||"";if(!name)return;
+      var s=map[name];
+      if(!s){s={totals:0,fields:{form:{},strength:{},freq:{},route:{}},combos:{}};map[name]=s;}
+      s.totals++;
+      function bump(k,v){if(!v)return;var f=s.fields[k];if(!f){f={};s.fields[k]=f;}f[v]=(f[v]||0)+1;}
+      bump("form",m.form);bump("strength",m.strength);bump("freq",m.freq);bump("route",m.route);
+      var key=[m.form||"",m.strength||"",m.freq||"",m.route||""].join("|");
+      var c=s.combos[key];if(!c){c={count:0,lastTs:0};s.combos[key]=c;}
+      c.count++;
+    });
+  });
+  return map;
+}
+function getMedSuggestion(name){
+  if(!store.data)return null;
+  // 推荐完全从全部病人的服药单实时派生（含部署前的历史数据）
+  var map=computeMedStats();
+  var s=map[name];
+  if(!s||s.totals<1)return null;
+  var combos=topByMap(s.combos,6);
+  // 按使用次数排序（取前 3 个最常用组合）
+  var scored=combos.map(function(c){
+    return {key:c[0],count:c[1].count,score:c[1].count,parts:c[0].split("|")};
+  });
+  scored.sort(function(a,b){return b.score-a.score});
+  var topCombos=scored.slice(0,3);
+  var topForm=topByMap(s.fields.form||{},1);
+  var topStrength=topByMap(s.fields.strength||{},1);
+  var topFreq=topByMap(s.fields.freq||{},1);
+  var topRoute=topByMap(s.fields.route||{},1);
+  return {totals:s.totals,topCombos:topCombos,
+    topForm:topForm[0]?topForm[0][0]:"",
+    topStrength:topStrength[0]?topStrength[0][0]:"",
+    topFreq:topFreq[0]?topFreq[0][0]:"",
+    topRoute:topRoute[0]?topRoute[0][0]:""};
+}
+/* 加药推荐：优先按录入历史，按疾病诊断类别推荐药物
+   - 聚合「同诊断类别」其他病人的用药频次（同类别加权）
+   - 本人既往用药强烈加权（优先根据录入历史）
+   - 排除已在当前服药单的药物；无诊断时回退到全局高频用药 */
+function getMedRecommendByDiag(p){
+  if(!store.data||!store.data.patients)return [];
+  var idx=diagCatIndex();
+  function catsOf(pt){var c={};(pt.diagnoses||[]).forEach(function(d){if(idx[d])c[idx[d]]=1;});return c;}
+  var catCount={};
+  sgPatients().forEach(function(pt){
+    var cats=catsOf(pt);if(!Object.keys(cats).length)return;
+    var drugs={};(pt.meds||[]).forEach(function(m){if(m.name)drugs[m.name]=1;});
+    for(var cat in cats){
+      if(!catCount[cat])catCount[cat]={};
+      for(var nm in drugs)catCount[cat][nm]=(catCount[cat][nm]||0)+1;
+    }
+  });
+  var pcats=catsOf(p);
+  var map={};
+  for(var cat in catCount){
+    var boost=pcats[cat]?4:1;
+    for(var nm in catCount[cat])map[nm]=(map[nm]||0)+catCount[cat][nm]*boost;
+  }
+  (p.meds||[]).forEach(function(m){if(m.name)map[m.name]=(map[m.name]||0)+5;}); /* 本人既往用药优先 */
+  var cur={};(p.meds||[]).forEach(function(m){if(m.name)cur[m.name]=1;});
+  var recs=topByMap(map,12).map(function(e){return {name:e[0],count:e[1]};}).filter(function(r){return !cur[r.name];});
+  if(!recs.length){
+    /* 无诊断时，回退到全局最常用药物 */
+    var stats=computeMedStats();var g={};
+    for(var n in stats)g[n]=stats[n].totals;
+    recs=topByMap(g,8).map(function(e){return {name:e[0],count:e[1]};}).filter(function(r){return !cur[r.name];});
+  }
+  return recs.slice(0,8);
+}
+function fmtComboParts(parts){
+  var form=parts[0]||"", strength=parts[1]||"", freq=parts[2]||"", route=parts[3]||"";
+  var bits=[];
+  if(strength)bits.push(strength);
+  if(form)bits.push(form);
+  if(freq){
+    var fs=freq.split(" ")[0];
+    if(fs)bits.push(fs);
+  }
+  if(route)bits.push(route);
+  return bits.join(" · ")||"(空)";
+}
+/* 药品字段取值器：新增表单（mc-*）与编辑表单（mh-*）通用 */
+function medFld(key){return $("#mc-"+key)||$("#mh-"+key)}
+function renderMedSuggestHtml(name){
+  var sg=getMedSuggestion(name);if(!sg)return "";
+  var h='<div class="med-suggest">'+
+    '<div class="med-suggest-t">💡 根据你的录入习惯（已录入 <b>'+sg.totals+'</b> 次）</div>';
+  // 单字段快捷采纳
+  h+='<div class="med-suggest-fields">';
+  function chip(label,key,val){if(!val)return '';return '<span class="med-sg-chip" data-action="med-field-pick" data-key="'+key+'" data-val="'+esc(val)+'" title="点击自动填入">'+label+': '+esc(val)+'</span>';}
+  h+=chip("剂型","form",sg.topForm);
+  h+=chip("规格","strength",sg.topStrength);
+  h+=chip("频率","freq",sg.topFreq);
+  h+=chip("方式","route",sg.topRoute);
+  h+='</div>';
+  // 完整组合一键采纳
+  if(sg.topCombos.length){
+    h+='<div class="med-suggest-t mt8">常用组合（点一下，整组填入）</div><div class="med-suggest-combos">';
+    sg.topCombos.forEach(function(c){
+      h+='<button type="button" class="med-sg-combo" data-action="med-combo-pick" data-form="'+esc(c.parts[0])+'" data-strength="'+esc(c.parts[1])+'" data-freq="'+esc(c.parts[2])+'" data-route="'+esc(c.parts[3])+'" title="点击把这四项全部填好">'+
+        esc(fmtComboParts(c.parts))+
+        ' <span class="med-sg-cnt">×'+c.count+'</span></button>';
+    });
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+/* 诊断目录：按 DSM-5-TR 体系分类（可多选）。值为诊断名称字符串，便于与历史数据兼容 */
+var DIAG_GROUPS=[
+ {cat:"神经发育障碍",items:[
+   "智力发育障碍（精神发育迟滞）","交流障碍","孤独症谱系障碍","注意缺陷/多动障碍（ADHD）",
+   "特定学习障碍","发育性运动协调障碍","抽动障碍","持续性（慢性）运动或发声抽动障碍",
+   "Tourette 综合征（抽动秽语综合征）","其他特定神经发育障碍","未特定神经发育障碍"
+ ]},
+ {cat:"精神分裂症谱系及其他精神病性障碍",items:[
+   "精神分裂症","分裂情感性障碍","精神分裂症样障碍","妄想障碍（偏执性精神病）",
+   "短暂精神病性障碍","物质/药物所致精神病性障碍","躯体疾病所致精神病性障碍",
+   "其他特定精神分裂症谱系障碍","未特定精神分裂症谱系障碍"
+ ]},
+ {cat:"双相及相关障碍",items:[
+   "双相 I 型障碍","双相 II 型障碍","环性心境障碍（环性障碍）","物质/药物所致双相及相关障碍",
+   "躯体疾病所致双相及相关障碍","其他特定双相及相关障碍","未特定双相及相关障碍"
+ ]},
+ {cat:"抑郁障碍",items:[
+   "重性抑郁障碍（单次/反复发作）","持续性抑郁障碍（恶劣心境）","经前期烦躁障碍",
+   "物质/药物所致抑郁障碍","躯体疾病所致抑郁障碍","其他特定抑郁障碍","未特定抑郁障碍","抑郁状态（未特定）"
+ ]},
+ {cat:"焦虑障碍",items:[
+   "广泛性焦虑障碍","惊恐障碍","惊恐发作（标注/状态）","焦虑状态/焦虑反应（未特定的焦虑障碍）",
+   "社交焦虑障碍（社交恐惧症）","特定恐惧症","广场恐惧症","分离焦虑障碍","选择性缄默症",
+   "其他特定焦虑障碍","未特定焦虑障碍"
+ ]},
+ {cat:"强迫及相关障碍",items:[
+   "强迫障碍（OCD）","躯体变形障碍","囤积障碍","拔毛障碍（拔毛癖）","抓挠（皮肤搔抓）障碍",
+   "物质/药物所致强迫及相关障碍","其他特定强迫及相关障碍","未特定强迫及相关障碍"
+ ]},
+ {cat:"创伤及应激相关障碍",items:[
+   "创伤后应激障碍（PTSD）","急性应激障碍","适应障碍（含抑郁/焦虑/品行等亚型）","反应性依恋障碍",
+   "去抑制性社会参与障碍","其他特定创伤及应激相关障碍"
+ ]},
+ {cat:"分离障碍",items:[
+   "分离性身份障碍（多重人格障碍）","分离性遗忘","人格解体/现实解体障碍","分离（转换）性障碍（解离性运动/感觉障碍）",
+   "其他特定分离障碍"
+ ]},
+ {cat:"躯体症状及相关障碍",items:[
+   "躯体症状障碍","疾病焦虑障碍（疑病症）","转换障碍（功能性神经症状障碍）","影响其他躯体疾病的心理因素",
+   "做作障碍（虚构障碍）","其他特定躯体症状障碍"
+ ]},
+ {cat:"喂食及进食障碍",items:[
+   "异食癖","反刍障碍","回避/限制性进食障碍","神经性厌食","神经性贪食","暴食障碍","其他特定喂食或进食障碍"
+ ]},
+ {cat:"睡眠-觉醒障碍",items:[
+   "失眠障碍","嗜睡障碍","发作性睡病","与呼吸相关的睡眠障碍","昼夜节律睡眠-觉醒障碍",
+   "非快速眼动睡眠 arousal 障碍（睡行、夜惊）","梦魇障碍","不宁腿综合征","物质/药物所致睡眠障碍","其他特定睡眠障碍"
+ ]},
+ {cat:"性功能失调",items:[
+   "延迟射精","勃起障碍","女性性兴趣/唤起障碍","生殖器-盆腔痛/插入障碍","早泄",
+   "男性性欲低下障碍","性厌恶障碍","其他特定性功能失调"
+ ]},
+ {cat:"性别烦躁",items:["性别烦躁（童年/青少年与成人）"]},
+ {cat:"破坏性行为、冲动控制及品行障碍",items:[
+   "对立违抗障碍","品行障碍","间歇性暴怒障碍","纵火癖","偷窃癖（kleptomania）"
+ ]},
+ {cat:"物质相关及成瘾障碍",items:[
+   "酒精使用障碍","咖啡因使用障碍","大麻使用障碍","阿片类物质使用障碍","镇静剂/催眠剂/抗焦虑药使用障碍",
+   "兴奋剂使用障碍","致幻剂使用障碍","烟草使用障碍","吸入剂使用障碍","赌博障碍","网络游戏障碍（研究用）"
+ ]},
+ {cat:"神经认知障碍",items:[
+   "谵妄","重度神经认知障碍（痴呆）","轻度神经认知障碍","阿尔茨海默病所致神经认知障碍",
+   "血管性神经认知障碍","路易体病所致神经认知障碍","额颞叶神经认知障碍","创伤性脑损伤所致神经认知障碍",
+   "帕金森病所致神经认知障碍","物质/药物所致神经认知障碍","躯体疾病（如 HIV）所致神经认知障碍","其他特定神经认知障碍"
+ ]},
+ {cat:"人格障碍",items:[
+   "偏执型人格障碍","分裂样人格障碍","分裂型人格障碍","反社会型人格障碍","边缘型人格障碍",
+   "表演型人格障碍","自恋型人格障碍","回避型人格障碍","依赖型人格障碍","强迫型人格障碍",
+   "其他特定人格障碍","未特定人格障碍"
+ ]},
+ {cat:"性欲倒错障碍",items:[
+   "恋童障碍","露阴障碍","窥阴障碍","摩擦障碍","性施虐障碍","性受虐障碍","恋物障碍","异装障碍","其他特定性欲倒错障碍"
+ ]},
+ {cat:"躯体疾病 / 共病（非 DSM-5，供共病与内科随访记录）",items:[
+   "高血压","2型糖尿病","脑梗死后遗症","冠心病","高脂血症","甲状腺功能减退","癫痫","癫痫所致精神障碍"
+ ]}
+];
+var DIAGNOSES=[];DIAG_GROUPS.forEach(function(g){DIAGNOSES=DIAGNOSES.concat(g.items)});
+/* 诊断选择器：按 DSM-5 分类折叠展示，已选项所在分组默认展开 */
+function renderDiagGroups(sel){
+  sel=sel||[];
+  var selSet={};sel.forEach(function(d){selSet[d]=1});
+  var known={};DIAG_GROUPS.forEach(function(g){g.items.forEach(function(d){known[d]=1})});
+  var html='';
+  /* 常用诊断快捷区：按历史录入频次置顶，免去在分类树里翻找 */
+  var favD=getDiagSuggestion(10);
+  if(favD.length){
+    html+='<div class="diag-fav"><div class="diag-fav-t">💡 常用诊断（按你的录入频次）</div><div class="diag-fav-items">';
+    favD.forEach(function(f){
+      html+='<span class="chip'+(selSet[f.name]?' on':'')+'" data-action="diag-toggle" data-name="'+esc(f.name)+'">'+esc(f.name)+'<i class="chip-cnt">'+f.count+'</i></span>';
+    });
+    html+='</div></div>';
+  }
+  html+='<div class="diag-groups">';
+  DIAG_GROUPS.forEach(function(g,gi){
+    var hasSel=g.items.some(function(d){return selSet[d]});
+    var collapsed=hasSel?'':' collapsed';
+    html+='<div class="diag-cat-row'+collapsed+'">'+
+      '<div class="diag-cat" data-action="diag-cat-toggle" data-cat="'+gi+'">'+
+        '<span class="diag-cat-name">'+esc(g.cat)+'</span>'+
+        '<span class="diag-cat-meta">'+(hasSel?'<span class="diag-cat-on">已选</span>':'')+'<span class="diag-caret">▾</span></span>'+
+      '</div><div class="diag-items">';
+    g.items.forEach(function(d){
+      html+='<span class="chip'+(selSet[d]?' on':'')+'" data-action="diag-toggle" data-name="'+esc(d)+'">'+esc(d)+'</span>';
+    });
+    html+='</div></div>';
+  });
+  var orphans=sel.filter(function(d){return !known[d]});
+  if(orphans.length){
+    html+='<div class="diag-cat-row"><div class="diag-cat" data-action="diag-cat-toggle" data-cat="orphan">'+
+      '<span class="diag-cat-name">其他（已选，不在目录中）</span><span class="diag-cat-meta"><span class="diag-caret">▾</span></span></div><div class="diag-items">';
+    orphans.forEach(function(d){html+='<span class="chip on" data-action="diag-toggle" data-name="'+esc(d)+'">'+esc(d)+'</span>'});
+    html+='</div></div>';
+  }
+  html+='</div>';
+  return html;
+}
+var FREQS = ["qd 每日一次","qd 每日一次（晨服）","qd 每日一次（睡前）","qd 每日一次（餐前）","qd 每日一次（餐中）","qd 每日一次（餐后）","bid 每日两次","bid 每日两次（早晚）","bid 每日两次（餐前）","bid 每日两次（餐中）","bid 每日两次（餐后）","tid 每日三次","tid 每日三次（三餐时）","tid 每日三次（餐前）","tid 每日三次（餐中）","tid 每日三次（餐后）","qid 每日四次","qn 每晚一次（睡前）","qm 每晨一次","qod 隔日一次","qw 每周一次（固定日）","biw 每周两次","prn 必要时","prn 必要时（睡前）","st 即刻"];
+var ROUTES = ["口服","舌下含服","口腔崩解","鼻饲","肌肉注射","静脉注射","皮下注射","透皮贴剂","外用"];
+var TDM_UNITS = ["ng/mL","μg/mL","mg/L","μmol/L","mmol/L"];
+var SLOTS = [{k:"m",t:"早"},{k:"n",t:"中"},{k:"e",t:"晚"}];
+
+/* ==================== 工具 ==================== */
+function $(s,r){return (r||document).querySelector(s)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function md(s){var p=s.split("-");return parseInt(p[1])+"/"+parseInt(p[2])}
+function wk(s){var w=["日","一","二","三","四","五","六"];return w[new Date(s+"T00:00:00").getDay()]}
+function toast(msg){var t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._tm);t._tm=setTimeout(function(){t.classList.remove("show")},1800)}
+function findDrug(name){for(var i=0;i<DRUG_LIB.length;i++){for(var j=0;j<DRUG_LIB[i].drugs.length;j++){if(DRUG_LIB[i].drugs[j].n===name)return DRUG_LIB[i].drugs[j]}}return null}
+/* 列标题完整文本：通用名 + 规格 + 剂型 */
+function medLabel(m){
+  var s=m.name||"";
+  if(m.strength)s+=" "+m.strength;
+  if(m.form)s+=" "+m.form;
+  return s;
+}
+/* 列标题第二行（频率/方式下方）：规格 剂型 频率首词 服药时机 方式，紧凑拼接 */
+function medSub(m){
+  var parts=[];
+  if(m.strength)parts.push(m.strength);
+  if(m.form)parts.push(m.form);
+  var f=(m.freq||"").split(" ")[0];
+  if(f)parts.push(f);
+  var tm=(m.freq||"").match(/（(.+?)）/);
+  if(tm&&tm[1])parts.push(tm[1]);
+  if(m.route)parts.push(m.route);
+  return parts.join(" ");
+}
+
+/* ==================== 多账号（数据相互隔离） ==================== */
+var OLD_KEY="psyMedSheet.v1";
+var ACC_KEY="psyMedSheet.accounts.v1";
+var accounts={
+  list:[], current:null,
+  load:function(){
+    try{var raw=localStorage.getItem(ACC_KEY);if(raw){var o=JSON.parse(raw);this.list=o.list||[];this.current=o.current||null}}catch(e){this.list=[];this.current=null}
+    if(this.current&&!this.get(this.current))this.current=null;
+  },
+  get:function(id){for(var i=0;i<this.list.length;i++)if(this.list[i].id===id)return this.list[i];return null},
+  save:function(){try{localStorage.setItem(ACC_KEY,JSON.stringify({list:this.list,current:this.current}))}catch(e){}},
+  add:function(name,pin){var a={id:uid(),name:name,pin:pin||""};this.list.push(a);this.current=a.id;this.save();return a},
+  del:function(id){try{localStorage.removeItem(this.dataKey(id))}catch(e){}this.list=this.list.filter(function(x){return x.id!==id});if(this.current===id)this.current=null;this.save()},
+  setPin:function(id,pin){var a=this.get(id);if(a){a.pin=pin||"";this.save()}},
+  dataKey:function(id){return "psyMedSheet.acct."+id}
+};
+function curAcctName(){var a=accounts.get(accounts.current);return a?a.name:""}
+
+/* ==================== 数据存储（按账号隔离） ==================== */
+var store={
+  data:null,
+  load:function(){
+    if(!accounts.current){this.data=null;return}
+    var raw=localStorage.getItem(accounts.dataKey(accounts.current));
+    this.data=null;
+    if(raw){try{this.data=JSON.parse(raw)}catch(e){this.data=null}}
+    if(!this.data||!this.data.patients)this.data={hospital:"",patients:[],orgs:[],ocr:null};
+    if(!this.data.orgs)this.data.orgs=[];
+    if(!this.data.ocr)this.data.ocr=null;
+    this.migrate();
+  },
+  save:function(){
+    if(!accounts.current||!this.data)return;
+    this.data.ts=Date.now();
+    localStorage.setItem(accounts.dataKey(accounts.current),JSON.stringify(this.data));
+  },
+  migrate:function(){
+    var ps=this.data.patients||[];
+    for(var i=0;i<ps.length;i++){
+      var p=ps[i];
+      if(!p.assessments)p.assessments=[];
+      if(!p.admissions){
+        p.admissions=[{id:uid(),bed:p.bed||"",admit:p.admit||"",status:"在院",discharge:""}];
+      }
+      if(p.archived==null)p.archived=false;
+      /* 入院记录补齐「所属机构/科室」与「记录类型」，用于换床 / 转科的完整轨迹追溯。
+         历史数据：前一条已结束（出院/死亡/转院）则本条视为新入院，否则视为换床。 */
+      for(var ai=0;ai<p.admissions.length;ai++){
+        var a=p.admissions[ai];
+        if(!a.id)a.id=uid();
+        if(a.orgId===undefined||a.orgId===null)a.orgId=p.orgId||null;
+        if(a.deptId===undefined||a.deptId===null)a.deptId=p.deptId||null;
+        if(!a.kind){
+          var prev=ai>0?p.admissions[ai-1]:null;
+          var ended=prev&&(prev.status==="出院"||prev.status==="死亡"||prev.status==="转院");
+          a.kind=(!prev||ended)?"入院":"换床";
+        }
+      }
+      if(p.meds)for(var k=0;k<p.meds.length;k++){
+        if(p.meds[k].form==null)p.meds[k].form="";
+        if(p.meds[k].strength==null)p.meds[k].strength="";
+      }
+    }
+  }
+};
+
+/* ==================== 账号界面 ==================== */
+function renderAccountScreen(){
+  var h='<div class="acct-screen"><div class="acct-head"><h1>精神药物服药单</h1>'+
+    '<p class="muted">请选择账号进入，各账号的病人数据相互独立、互不可见。</p>'+
+    '<p class="warn-tip">⚠️ 注意：数据按「当前浏览器」保存。在微信里打开、与在系统浏览器（Safari/Chrome）里打开是<b>两套完全独立的存储</b>，即使账号同名也不会互通。换浏览器后看不到旧数据，请先用「生成同步二维码」或「导出/导入」把数据迁过来。</p></div>';
+  if(accounts.list.length){
+    h+='<div class="acct-list">';
+    for(var i=0;i<accounts.list.length;i++){
+      var a=accounts.list[i];
+      h+='<button class="acct-card" data-action="acct-enter" data-id="'+a.id+'">'+
+        '<span class="acct-name">'+esc(a.name)+'</span>'+
+        (a.pin?'<span class="acct-lock">🔒</span>':'<span class="acct-lock muted">›</span>')+
+        '</button>';
+    }
+    h+='</div>';
+  }else{
+    h+='<div class="empty">还没有账号，点击下方新建。</div>';
+  }
+  h+='<button class="btn btn-block mt16" data-action="acct-new">＋ 新建账号</button></div>';
+  $("#app").innerHTML=h;
+}
+function openPinSheet(id){
+  var a=accounts.get(id);if(!a)return;
+  var h='<div class="sheet-hd"><div class="t">'+esc(a.name)+'</div><button class="x" data-action="sheet-close">✕</button></div>'+
+    '<div class="sheet-bd"><div class="field"><label>请输入账号密码（PIN）</label>'+
+    '<input id="pin-input" type="password" inputmode="numeric" autocomplete="off" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;font-size:18px" placeholder="数字密码">'+
+    '</div><button class="btn btn-block" data-action="pin-enter" data-id="'+id+'">进入</button>'+
+    '<div class="muted mt12" id="pin-err"></div></div>';
+  openSheet(h);
+  setTimeout(function(){var i=$("#pin-input");if(i)i.focus()},60);
+}
+function openNewAccount(){
+  var h='<div class="sheet-hd"><div class="t">新建账号</div><button class="x" data-action="sheet-close">✕</button></div>'+
+    '<div class="sheet-bd">'+
+    '<div class="field"><label>账号名称（如：张医生 / 本人）</label><input id="acct-name" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;font-size:16px" placeholder="姓名或称呼"></div>'+
+    '<div class="field"><label>密码 PIN（可选，保护病历隐私）</label><input id="acct-pin" type="password" inputmode="numeric" autocomplete="off" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;font-size:18px" placeholder="留空则不需要密码"></div>'+
+    '<button class="btn btn-block" data-action="acct-create">创建并进入</button>'+
+    '<div class="muted mt12">每个账号数据相互独立，同一台手机上的不同同事用各自账号，不会混淆。</div>'+
+    '<div class="warn-tip">⚠️ 同一账号在「微信」和「系统浏览器」里是两套存储，不会自动同步。若已在另一浏览器录入数据，建好后请用「数据 → 粘贴同步码导入 / 导入文件」迁过来。</div></div>';
+  openSheet(h);
+}
+function openAccountManage(){
+  var h='<div class="sheet-hd"><div class="t">账号管理</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">';
+  h+='<div class="muted mb8">当前账号：<b>'+esc(curAcctName())+'</b>。各账号数据相互独立。</div>';
+  for(var i=0;i<accounts.list.length;i++){
+    var a=accounts.list[i];
+    h+='<div class="acct-row"><span class="acct-rowname">'+esc(a.name)+'</span>'+
+      (a.pin?'<span class="acct-lock">🔒</span>':'')+
+      '<button class="btn btn-sm btn-ghost" data-action="acct-rename" data-id="'+a.id+'">改名</button>'+
+      '<button class="btn btn-sm btn-ghost" data-action="acct-setpin" data-id="'+a.id+'">'+(a.pin?'改密码':'设密码')+'</button>'+
+      '<button class="btn btn-sm btn-danger" data-action="acct-del" data-id="'+a.id+'">删除</button></div>';
+  }
+  h+='<div class="divider"></div><button class="btn btn-block" data-action="acct-new">＋ 新建账号</button></div>';
+  openSheet(h);
+}
+function openSetPinSheet(id){
+  var a=accounts.get(id);if(!a)return;
+  var h='<div class="sheet-hd"><div class="t">设置密码 · '+esc(a.name)+'</div><button class="x" data-action="sheet-close">✕</button></div>'+
+    '<div class="sheet-bd"><div class="field"><label>新密码 PIN（留空则取消密码）</label><input id="sp-pin" type="password" inputmode="numeric" autocomplete="off" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;font-size:18px" placeholder="数字密码"></div>'+
+    '<button class="btn btn-block" data-action="sp-save" data-id="'+id+'">保存</button></div>';
+  openSheet(h);
+}
+function enterAccount(id,doSync){
+  var a=accounts.get(id);if(!a)return;
+  accounts.current=id;accounts.save();
+  store.load();
+  closeSheet();
+  state.view="home";state.pid=null;render();
+  if(doSync)tryHashSync();
+}
+function migrateOld(){
+  if(accounts.list.length)return;            // 已有账号，跳过迁移
+  var old=null;
+  try{var raw=localStorage.getItem(OLD_KEY);if(raw)old=JSON.parse(raw)}catch(e){old=null}
+  if(old&&old.patients){                      // 旧版单账号数据 → 迁移为默认账号
+    var a=accounts.add("我的账号","");
+    try{localStorage.setItem(accounts.dataKey(a.id),JSON.stringify(old))}catch(e){}
+    accounts.current=a.id;accounts.save();
+  }
+  // 全新安装：不预建账号，启动后显示账号选择页，由使用者自行新建账号
+}
+function getPatient(pid){for(var i=0;i<store.data.patients.length;i++){if(store.data.patients[i].id===pid)return store.data.patients[i]}return null}
+function touch(p){p.updatedAt=Date.now();store.save()}
+
+/* ==================== 入院记录 / 床位 ==================== */
+/* 病案号是病人的稳定标识；床位属于某次入院记录，可随换床/出院/死亡变更 */
+function admissionsOf(p){return p.admissions||[]}
+function currentAdmission(p){
+  var ads=admissionsOf(p);
+  if(!ads.length)return null;
+  /* 取最后一条「在院」记录：换床 / 转科会把旧记录关闭并追加新记录 */
+  for(var i=ads.length-1;i>=0;i--)if(ads[i].status==="在院")return ads[i];
+  var sorted=ads.slice().sort(function(a,b){return (b.admit||"")<(a.admit||"")?-1:1});
+  return sorted[0];
+}
+function currentBed(p){var a=currentAdmission(p);return a?a.bed:""}
+function currentStatus(p){var a=currentAdmission(p);return a?a.status:""}
+/* 真正的「入院次数」：只数 kind 为入院的记录，换床 / 转科不计入 */
+function admitCount(p){
+  var ads=admissionsOf(p),n=0;
+  for(var i=0;i<ads.length;i++)if((ads[i].kind||"入院")==="入院")n++;
+  return n||ads.length;
+}
+function isArchived(p){return !!p.archived}
+/* 某日期所处的床位（按入院—出院区间匹配，无匹配返回空） */
+function bedAtDate(p,date){
+  var ads=admissionsOf(p),best=null;
+  for(var i=0;i<ads.length;i++){
+    var a=ads[i];
+    if(!a.admit||a.admit>date)continue;
+    if(a.discharge&&a.discharge<date)continue;
+    if(!best||(a.admit||"")>(best.admit||""))best=a;
+  }
+  return best?best.bed:"";
+}
+/* ==================== 排序：住院按床位、门诊按病种 ==================== */
+/* 床位号自然排序：把数字段与非数字段拆开，数字段按数值比较。
+   于是 3062 < 3100（而非字符串意义上的 3100 < 3062），A5 < A12，空床位排最后。 */
+function bedTokens(b){
+  var out=[],re=/(\d+|\D+)/g,m;
+  while((m=re.exec(b||""))!==null){
+    if(/^\d+$/.test(m[0]))out.push({n:parseInt(m[0],10),s:m[0]});
+    else out.push({n:null,s:m[0].toLowerCase()});
+  }
+  return out;
+}
+function cmpBed(b1,b2){
+  var e1=!String(b1||"").trim(),e2=!String(b2||"").trim();
+  if(e1&&e2)return 0;
+  if(e1)return 1;
+  if(e2)return -1;
+  var t1=bedTokens(b1),t2=bedTokens(b2),n=Math.max(t1.length,t2.length);
+  for(var i=0;i<n;i++){
+    var a=t1[i],b=t2[i];
+    if(!a)return -1;
+    if(!b)return 1;
+    if(a.n!==null&&b.n!==null){if(a.n!==b.n)return a.n-b.n}
+    else if(a.s!==b.s)return a.s<b.s?-1:1;
+  }
+  return 0;
+}
+/* 姓名排序：优先按中文拼音（localeCompare zh），环境不支持时退化为码点序 */
+function cmpName(p1,p2){
+  var a=(p1&&p1.name)||"",b=(p2&&p2.name)||"";
+  try{var r=a.localeCompare(b,"zh-Hans-CN",{sensitivity:"base"});if(r)return r}
+  catch(e){if(a!==b)return a<b?-1:1}
+  return 0;
+}
+/* 门诊按疾病大类归集：诊断 → DSM-5 大类 */
+var _diagCatIdx=null;
+function diagCatIndex(){
+  if(_diagCatIdx)return _diagCatIdx;
+  _diagCatIdx={};
+  DIAG_GROUPS.forEach(function(g){g.items.forEach(function(d){_diagCatIdx[d]=g.cat})});
+  return _diagCatIdx;
+}
+function diagCatOf(p){
+  var ds=(p&&p.diagnoses)||[];
+  if(!ds.length)return "未填写诊断";
+  var idx=diagCatIndex();
+  for(var i=0;i<ds.length;i++){if(idx[ds[i]])return idx[ds[i]]}
+  return "其他诊断";
+}
+/* 住院：在院优先 → 床位号自然序 → 姓名 */
+function sortInpatients(list){
+  return list.slice().sort(function(a,b){
+    var sa=currentStatus(a)==="在院"?0:1,sb=currentStatus(b)==="在院"?0:1;
+    if(sa!==sb)return sa-sb;
+    var c=cmpBed(currentBed(a),currentBed(b));
+    if(c)return c;
+    return cmpName(a,b);
+  });
+}
+/* 门诊：按疾病大类归集（沿用 DSM-5 章节顺序），组内按姓名排序 */
+function groupOutpatients(list){
+  var map={},cats=[];
+  list.forEach(function(p){
+    var c=diagCatOf(p);
+    if(!map[c]){map[c]=[];cats.push(c)}
+    map[c].push(p);
+  });
+  var order={};DIAG_GROUPS.forEach(function(g,i){order[g.cat]=i});
+  cats.sort(function(a,b){
+    var ia=a==="其他诊断"?980:(a==="未填写诊断"?990:(order[a]!=null?order[a]:900));
+    var ib=b==="其他诊断"?980:(b==="未填写诊断"?990:(order[b]!=null?order[b]:900));
+    if(ia!==ib)return ia-ib;
+    return a<b?-1:1;
+  });
+  return cats.map(function(c){return {cat:c,list:map[c].slice().sort(cmpName)}});
+}
+/* 科室按名称里的数字自动升序排列（支持阿拉伯数字与中文数字），无数字的科室按名称排在其后 */
+var _CN_NUM={零:0,一:1,二:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9,十:10,十一:11,十二:12,十三:13,十四:14,十五:15,十六:16,十七:17,十八:18,十九:19,二十:20};
+function deptNum(d){
+  var s=d&&d.name?d.name:"";
+  var m=/(零|一|二|三|四|五|六|七|八|九|十|十一|十二|十三|十四|十五|十六|十七|十八|十九|二十|\d+)/.exec(s);
+  if(!m)return null;
+  if(_CN_NUM[m[1]]!=null)return _CN_NUM[m[1]];
+  if(/^\d+$/.test(m[1]))return parseInt(m[1],10);
+  return null;
+}
+function cmpDept(a,b){
+  var na=deptNum(a),nb=deptNum(b);
+  if(na==null&&nb==null)return (a.name||"")<(b.name||"")?-1:1;
+  if(na==null)return 1;          // 带数字的科室排前面
+  if(nb==null)return -1;
+  if(na!==nb)return na-nb;
+  return (a.name||"")<(b.name||"")?-1:1;
+}
+/* 病人的管理类型：住院（带床位/入院记录）或门诊（按随访管理，无床位）。
+   优先取所属科室的类型；未分组病人取自身存储的 careType（默认住院）。 */
+function getCareType(p){
+  var d=getDept(p.orgId,p.deptId);
+  if(d)return d.type||"inpatient";
+  return p.careType||"inpatient";
+}
+/* 表单中：根据当前选中的科室，找到对应的科室对象（含类型） */
+function getDeptSelected(){
+  var os=$("#pf-org"),ds=$("#pf-dept");
+  if(!ds||!ds.value||ds.value==="__new__")return null;
+  var oName=os?os.value:"";
+  var org=oName&&oName!=="__new__"?getOrgByName(oName):null;
+  if(!org)return null;
+  for(var i=0;i<org.depts.length;i++){if(org.depts[i].name===ds.value)return org.depts[i]}
+  return null;
+}
+/* 根据当前科室选择刷新「管理类型」控件与入院记录区块的显隐 */
+function updateCareUI(){
+  var ds=$("#pf-dept"),ctInput=$("#pf-caretype"),ctg=$("#care-type-group"),aw=$("#adm-wrap"),on=$("#opd-note");
+  if(!ds||!ctInput)return;
+  var dval=ds.value,ct;
+  if(dval&&dval!=="__new__"){
+    var d=getDeptSelected();ct=(d&&d.type)||"inpatient";if(ctg)ctg.style.display="none";
+  }else if(dval==="__new__"){
+    var dtc=document.querySelector("#pf-dept-type .chip.on");ct=dtc?dtc.getAttribute("data-v"):"inpatient";if(ctg)ctg.style.display="none";
+  }else{
+    var st=document.querySelector("#care-type-group .chip.on");ct=st?st.getAttribute("data-v"):"inpatient";if(ctg)ctg.style.display="block";
+  }
+  ctInput.value=ct;
+  if(ct==="outpatient"){if(aw)aw.style.display="none";if(on)on.style.display="block"}
+  else{if(aw)aw.style.display="block";if(on)on.style.display="none"}
+}
+
+/* ==================== 机构/科室 ==================== */
+function getOrg(id){for(var i=0;i<store.data.orgs.length;i++){if(store.data.orgs[i].id===id)return store.data.orgs[i]}return null}
+function getOrgByName(name){name=(name||"").trim();for(var i=0;i<store.data.orgs.length;i++){if(store.data.orgs[i].name===name)return store.data.orgs[i]}return null}
+function getDept(orgId,deptId){var o=getOrg(orgId);if(!o)return null;for(var i=0;i<o.depts.length;i++){if(o.depts[i].id===deptId)return o.depts[i]}return null}
+function ensureOrg(name){
+  name=(name||"").trim();if(!name)return null;
+  var ex=getOrgByName(name);
+  if(ex)return ex;
+  var o={id:uid(),name:name,depts:[]};
+  store.data.orgs.push(o);store.save();
+  return o;
+}
+function ensureDept(org,name,type){
+  name=(name||"").trim();if(!org||!name)return null;
+  for(var i=0;i<org.depts.length;i++){if(org.depts[i].name===name)return org.depts[i]}
+  var d={id:uid(),name:name,type:type||"inpatient"};org.depts.push(d);store.save();
+  return d;
+}
+function fillDepts(orgName){
+  var co=getOrgByName(orgName);
+  var opts='<option value="">请选择科室/病区</option>';
+  if(co){for(var i=0;i<co.depts.length;i++)opts+='<option value="'+esc(co.depts[i].name)+'">'+esc(co.depts[i].name)+'</option>'}
+  opts+='<option value="__new__">＋ 新建/其他科室…</option>';
+  var ds=$("#pf-dept");if(ds)ds.innerHTML=opts;
+}
+
+/* ==================== 全局状态 ==================== */
+var state={view:"home",pid:null,tab:"grid",search:"",sheetMed:null,editCell:null,editRow:null,collapsed:{}};
+
+/* ==================== 弹层 ==================== */
+function openSheet(html){
+  $("#sheet").innerHTML=html;
+  $("#overlay").classList.add("show");
+  var s=$("#sheet");requestAnimationFrame(function(){s.classList.add("show")});
+}
+function closeSheet(){
+  $("#sheet").classList.remove("show");
+  $("#overlay").classList.remove("show");
+}
+
+/* ==================== 首页 ==================== */
+function render(){
+  if(state.view==="home")renderHome();else renderPatient();
+}
+function renderHome(){
+  var h='<div class="appbar"><h1>服药单<span class="sub">'+esc(store.data.hospital||"")+'</span></h1>'+
+    '<button data-action="acct-switch" class="acct-chip">'+esc(curAcctName()||"账号")+' ▾</button>'+
+    '<button data-action="data-menu">数据</button></div>';
+  h+='<div class="search-wrap"><input id="search" placeholder="搜索姓名 / 床号 / 诊断" value="'+esc(state.search)+'"></div>';
+  h+='<div id="plist"></div>';
+  h+='<button class="fab" data-action="add-patient" title="新建病人">＋</button>';
+  $("#app").innerHTML=h;
+  renderPatientList();
+  var si=$("#search");
+  if(si)si.addEventListener("input",function(){state.search=this.value;renderPatientList()});
+}
+/* 一组病人的卡片区：住院按床位排序，门诊按疾病大类归集后按姓名排序。
+   type：inpatient / outpatient / mixed（未分科室时同时含两类） */
+function listBodyHTML(list,type,showOrg){
+  if(!list||!list.length)return "";
+  var out="";
+  if(type==="none"){   /* 保持调用方给定的顺序 */
+    list.forEach(function(p){out+=pcardHTML(p,showOrg)});
+    return out;
+  }
+  if(type==="mixed"){
+    var inp=[],opd=[];
+    list.forEach(function(p){(getCareType(p)==="outpatient"?opd:inp).push(p)});
+    out+=listBodyHTML(inp,"inpatient",showOrg);
+    out+=listBodyHTML(opd,"outpatient",showOrg);
+    return out;
+  }
+  if(type==="outpatient"){
+    var grps=groupOutpatients(list);
+    grps.forEach(function(g){
+      out+='<div class="dgrp"><span class="dgc">'+g.list.length+'</span>'+esc(g.cat)+'</div>';
+      g.list.forEach(function(p){out+=pcardHTML(p,showOrg)});
+    });
+    return out;
+  }
+  sortInpatients(list).forEach(function(p){out+=pcardHTML(p,showOrg)});
+  return out;
+}
+function renderPatientList(){
+  var kw=state.search.trim().toLowerCase();
+  var all=store.data.patients.slice();
+  if(kw){
+    var list=all.filter(function(p){
+      var bedStr=admissionsOf(p).map(function(a){return a.bed||""}).join(" ").toLowerCase();
+      return (p.name||"").toLowerCase().indexOf(kw)>=0||bedStr.indexOf(kw)>=0||
+        (p.recordNo||"").toLowerCase().indexOf(kw)>=0||
+        (p.diagnoses||[]).join(",").toLowerCase().indexOf(kw)>=0||
+        (getOrg(p.orgId)?getOrg(p.orgId).name:"").toLowerCase().indexOf(kw)>=0||
+        (getDept(p.orgId,p.deptId)?getDept(p.orgId,p.deptId).name:"").toLowerCase().indexOf(kw)>=0;
+    });
+    /* 搜索时连已隐藏的病人一并检索，但排在后面并加标记 */
+    list.sort(function(a,b){
+      var aa=isArchived(a)?1:0,ab=isArchived(b)?1:0;
+      if(aa!==ab)return aa-ab;
+      return cmpName(a,b);
+    });
+    var h="";
+    if(!list.length){h='<div class="empty">未找到匹配的病人</div>'}
+    else for(var i=0;i<list.length;i++)h+=pcardHTML(list[i],true);
+    $("#plist").innerHTML=h;
+    return;
+  }
+  var active=[],hidden=[];
+  all.forEach(function(p){(isArchived(p)?hidden:active).push(p)});
+  var orgs=store.data.orgs||[];
+  var buckets={};
+  var unassigned=[];
+  for(var i=0;i<active.length;i++){
+    var p=active[i];
+    if(!p.orgId||!getOrg(p.orgId)){unassigned.push(p);continue}
+    if(!buckets[p.orgId])buckets[p.orgId]={depts:{},undept:[]};
+    var b=buckets[p.orgId];
+    if(p.deptId&&getDept(p.orgId,p.deptId)){(b.depts[p.deptId]=b.depts[p.deptId]||[]).push(p)}
+    else b.undept.push(p);
+  }
+  var html="";
+  for(var oi=0;oi<orgs.length;oi++){
+    var org=orgs[oi],b=buckets[org.id];
+    if(!b)continue;
+    var orgCount=0;for(var k in b.depts)orgCount+=b.depts[k].length;orgCount+=b.undept.length;
+    if(!orgCount)continue;
+    var okey="org:"+org.id,ocol=state.collapsed[okey];
+    html+='<div class="ghead'+(ocol?' collapsed':'')+'" data-action="toggle-org" data-oid="'+org.id+'"><span class="gc">'+orgCount+'</span><span class="gn">'+esc(org.name)+'</span><span class="gt">▾</span></div>';
+    if(!ocol){
+      var deptsSorted=org.depts.slice().sort(cmpDept);
+      for(var di=0;di<deptsSorted.length;di++){
+        var dept=deptsSorted[di],dl=b.depts[dept.id];
+        if(!dl||!dl.length)continue;
+        var dkey="dept:"+org.id+":"+dept.id,dcol=state.collapsed[dkey];
+        var isOpd=dept.type==="outpatient";
+        var dtag=isOpd?'<span class="dtype op">门诊</span>':'<span class="dtype">住院</span>';
+        var dhint=isOpd?'<span class="sorthint">按病种</span>':'<span class="sorthint">按床位</span>';
+        html+='<div class="subhead'+(dcol?' collapsed':'')+'" data-action="toggle-dept" data-oid="'+org.id+'" data-did="'+dept.id+'"><span class="sc">'+dl.length+'</span><span class="sn">'+esc(dept.name)+'</span>'+dtag+dhint+'<button class="add" data-action="add-patient-dept" data-org="'+esc(org.name)+'" data-dept="'+esc(dept.name)+'">＋</button></div>';
+        if(!dcol)html+=listBodyHTML(dl,isOpd?"outpatient":"inpatient",false);
+      }
+      if(b.undept.length){
+        html+='<div class="subhead"><span class="sc">'+b.undept.length+'</span><span class="sn">未分配科室</span></div>';
+        html+=listBodyHTML(b.undept,"mixed",false);
+      }
+    }
+  }
+  if(unassigned.length){
+    var ukey="org:__none",ucol=state.collapsed[ukey];
+    html+='<div class="ghead'+(ucol?' collapsed':'')+'" data-action="toggle-org" data-oid="__none"><span class="gc">'+unassigned.length+'</span><span class="gn">未分组</span><span class="gt">▾</span></div>';
+    if(!ucol)html+=listBodyHTML(unassigned,"mixed",true);
+  }
+  if(hidden.length){
+    var hkey="org:__hidden";
+    if(state.collapsed[hkey]===undefined)state.collapsed[hkey]=true;   /* 默认收起 */
+    var hcol=state.collapsed[hkey];
+    html+='<div class="ghead hidden-head'+(hcol?' collapsed':'')+'" data-action="toggle-org" data-oid="__hidden"><span class="gc">'+hidden.length+'</span><span class="gn">已隐藏病人</span><span class="gt">▾</span></div>';
+    if(!hcol){
+      html+='<div class="hidden-tip">出院 / 死亡后隐藏的病人。记录仍完整保留，点开可查看或恢复显示。</div>';
+      html+=listBodyHTML(hidden.slice().sort(function(a,b){return (b.archivedAt||0)-(a.archivedAt||0)}),"none",true);
+    }
+  }
+  if(!html)html='<div class="empty">暂无病人，点击右下角 ＋ 新建</div>';
+  $("#plist").innerHTML=html;
+}
+function pcardHTML(p,showOrg){
+  var diags=(p.diagnoses||[]).slice(0,3).map(function(d){return '<span class="dtag">'+esc(d)+'</span>'}).join("");
+  var lastRow=p.rows&&p.rows.length?p.rows[p.rows.length-1].date:null;
+  var org=getOrg(p.orgId),dept=getDept(p.orgId,p.deptId);
+  var cb=currentBed(p),cs=currentStatus(p);
+  var orgline="";
+  if(showOrg&&(org||dept))orgline='<div class="ocard">'+(org?esc(org.name):"")+(org&&dept?" · ":"")+(dept?esc(dept.name):"")+'</div>';
+  var arch=isArchived(p);
+  var nAdmit=admitCount(p),nMove=admissionsOf(p).length-nAdmit;
+  var moveTip=nMove>0?' · 换床/转科 '+nMove+' 次':'';
+  return '<div class="pcard'+(arch?' arch':'')+'" data-action="open-patient" data-pid="'+p.id+'">'+
+    '<div class="row"><span class="pname">'+esc(p.name)+(arch?'<span class="status-pill out">已隐藏</span>':'')+'</span>'+
+    '<span class="muted">'+esc(p.gender||"")+' '+(p.age?esc(p.age)+"岁":"")+'</span></div>'+
+    (getCareType(p)==="outpatient"
+      ?'<div class="pmeta">门诊管理 · 病案号 '+esc(p.recordNo||"—")+'</div>'
+      :'<div class="pmeta">床号 '+esc(cb||"—")+(cs&&cs!=="在院"?'<span class="status-pill out">'+esc(cs)+'</span>':'')+' · 病案号 '+esc(p.recordNo||"—")+(nAdmit>1?' · 入院 '+nAdmit+' 次':'')+'</div>')+
+    orgline+
+    (diags?'<div class="pdiag">'+diags+'</div>':'')+
+    '<div class="pmeta mt8">用药 '+(p.meds?p.meds.length:0)+' 种'+(lastRow?' · 最近记录 '+md(lastRow):'')+moveTip+'</div>'+
+  '</div>';
+}
+
+/* ==================== 病人表单 ==================== */
+function openPatientForm(pid,preset){
+  var p=pid?getPatient(pid):null;
+  var curOrgName=p?(getOrg(p.orgId)?getOrg(p.orgId).name:""):(preset&&preset.orgName||"");
+  var curDeptName=p?(getDept(p.orgId,p.deptId)?getDept(p.orgId,p.deptId).name:""):(preset&&preset.deptName||"");
+  var curCareType=p?(getCareType(p)):(preset&&preset.careType||"inpatient");
+  /* 新建病人且无预设时：按历史习惯预选最常用的机构 · 科室 */
+  var odSug=getOrgDeptSuggestion(3);
+  if(!p&&!curOrgName&&!curDeptName&&odSug.length){
+    curOrgName=odSug[0].org;curDeptName=odSug[0].dept;
+  }
+  var orgOpts='<option value="">请选择机构</option>';
+  for(var oi=0;oi<store.data.orgs.length;oi++){
+    var o=store.data.orgs[oi];
+    orgOpts+='<option value="'+esc(o.name)+'"'+(o.name===curOrgName?' selected':'')+'>'+esc(o.name)+'</option>';
+  }
+  orgOpts+='<option value="__new__">＋ 新建/其他机构…</option>';
+  var h='<div class="sheet-hd"><div class="t">'+(p?'编辑病人':'新建病人')+'</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">'+
+  '<div class="field"><label>姓名</label><input id="pf-name" value="'+esc(p?p.name:"")+'" placeholder="病人姓名"></div>'+
+  '<div class="frow">'+
+    '<div class="field"><label>性别</label><select id="pf-gender"><option value="">请选择</option>'+
+      '<option'+(p&&p.gender==="男"?" selected":"")+'>男</option><option'+(p&&p.gender==="女"?" selected":"")+'>女</option></select></div>'+
+    '<div class="field"><label>年龄</label><input id="pf-age" type="number" min="0" max="130" value="'+(p&&p.age?esc(p.age):"")+'" placeholder="岁"></div>'+
+  '</div>'+
+  '<div class="field"><label>病案号（稳定标识，一般不变）</label><input id="pf-rec" value="'+esc(p?p.recordNo:"")+'" placeholder="如 2025150"></div>'+
+  sgBarHtml("💡 常用去向（点一下，机构+科室整组填入）",odSug.map(function(x){
+    return {label:(x.org||"—")+(x.dept?" · "+x.dept:""),count:x.count,attrs:{org:x.org,dept:x.dept}};
+  }),"orgdept-pick",{slim:true})+
+  '<div class="frow">'+
+    '<div class="field"><label>机构</label><select id="pf-org">'+orgOpts+'</select></div>'+
+    '<div class="field"><label>科室/病区</label><select id="pf-dept"><option value="">请选择科室/病区</option><option value="__new__">＋ 新建/其他科室…</option></select></div>'+
+  '</div>'+
+  '<input id="pf-org-new" placeholder="输入机构名称" style="display:none;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;font-size:16px;margin-bottom:12px">'+
+  '<input id="pf-dept-new" placeholder="输入科室/病区名称" style="display:none;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;font-size:16px">'+
+  '<div id="pf-dept-type" style="display:none" class="chips mt8"><span class="chip on" data-action="dept-type" data-v="inpatient">住院</span><span class="chip" data-action="dept-type" data-v="outpatient">门诊</span></div>'+
+  '<div class="sect-t">管理类型</div>'+
+  '<div class="muted" style="margin:-4px 0 8px">住院病人记录床位 / 入院；门诊病人按随访管理，无需床位。</div>'+
+  '<div id="care-type-group" class="chips"><span class="chip caretype on" data-action="care-type" data-v="inpatient">住院</span><span class="chip caretype" data-action="care-type" data-v="outpatient">门诊</span></div>'+
+  '<input type="hidden" id="pf-caretype" value="'+esc(curCareType)+'">'+
+  '<div id="adm-wrap">'+
+  '<div class="sect-t">住院轨迹（入院 / 换床 / 转科各一条）</div>'+
+  '<div class="muted" style="margin:-4px 0 8px">日常换床、转科请用病人页的「🛏 换床 / 转科」一键登记，会自动结束旧记录并新开一条。此处用于补录或订正。</div>'+
+  '<div id="adm-list"></div>'+
+  '<button class="btn btn-ghost btn-sm" data-action="adm-add" style="margin-top:2px">＋ 新增一条记录</button>'+
+  '</div>'+
+  '<div id="opd-note" style="display:none" class="opd-note">门诊病人无需床位 / 入院记录，按门诊随访管理即可。</div>'+
+  '<div class="sect-t">诊断（按 DSM-5 分类，可多选，点分类名展开/收起）</div><div id="pf-diags">'+
+  renderDiagGroups(p?(p.diagnoses||[]):[])+
+  '</div><div class="row mt8"><input id="pf-diag-custom" placeholder="其他诊断，回车添加" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font-size:15px">'+
+  '<button class="btn btn-sm" data-action="diag-add">添加</button></div>'+
+  '<div class="mt16"><button class="btn btn-block" data-action="patient-save" data-pid="'+(p?p.id:"")+'">保存</button></div>'+
+  (p?'<div class="mt12"><button class="btn btn-danger btn-block" data-action="del-patient" data-pid="'+p.id+'">删除该病人</button></div>':'')+
+  '</div>';
+  openSheet(h);
+  renderAdmIntoSheet(p);
+  fillDepts(curOrgName);
+  var ds=$("#pf-dept");if(curDeptName)ds.value=curDeptName;
+  wireOrgDept();
+  updateCareUI();
+  var ci=$("#pf-diag-custom");
+  if(ci)ci.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();addCustomDiag(pid)}});
+}
+function wireOrgDept(){
+  var os=$("#pf-org"),ds=$("#pf-dept"),on=$("#pf-org-new"),dn=$("#pf-dept-new");
+  if(!os)return;
+  os.addEventListener("change",function(){
+    if(this.value==="__new__"){on.style.display="block";on.focus();fillDepts("")}
+    else{on.style.display="none";on.value="";fillDepts(this.value)}
+  });
+  ds.addEventListener("change",function(){
+    if(this.value==="__new__"){dn.style.display="block";dn.focus();var dt=$("#pf-dept-type");if(dt)dt.style.display="block"}
+    else{dn.style.display="none";dn.value="";var dt=$("#pf-dept-type");if(dt)dt.style.display="none"}
+    updateCareUI();
+  });
+}
+function addCustomDiag(pid){
+  var v=$("#pf-diag-custom").value.trim();if(!v)return;
+  var tmp=collectFormDiags();tmp.push(v);
+  openPatientFormKeep(pid,tmp);
+}
+function collectFormDiags(){
+  var out=[],seen={};var chips=document.querySelectorAll("#pf-diags .chip.on");
+  for(var i=0;i<chips.length;i++){
+    var n=chips[i].getAttribute("data-name");
+    if(n&&!seen[n]){seen[n]=1;out.push(n)}   /* 常用区与分类树可能重复，去重 */
+  }
+  return out;
+}
+function openPatientFormKeep(pid,diags){
+  var os=$("#pf-org"),onv=$("#pf-org-new"),ds=$("#pf-dept"),dnv=$("#pf-dept-new");
+  var careTypeSel=$("#pf-caretype")?$("#pf-caretype").value:"inpatient";
+  var deptTypeSel=(function(){var dt=document.querySelector("#pf-dept-type .chip.on");return dt?dt.getAttribute("data-v"):"inpatient"})();
+  var snap={
+    name:$("#pf-name").value,recordNo:$("#pf-rec").value,
+    gender:$("#pf-gender").value,age:$("#pf-age").value,
+    org:os?os.value:"",orgNew:onv?onv.value:"",dept:ds?ds.value:"",deptNew:dnv?dnv.value:"",
+    careType:careTypeSel,deptType:deptTypeSel,
+    admissions:collectAdmissions(),
+    diagnoses:diags
+  };
+  openPatientForm(pid);
+  $("#pf-name").value=snap.name;$("#pf-rec").value=snap.recordNo;
+  $("#pf-gender").value=snap.gender;$("#pf-age").value=snap.age;
+  var nos=$("#pf-org"),nonv=$("#pf-org-new"),nds=$("#pf-dept"),ndnv=$("#pf-dept-new");
+  if(snap.org==="__new__"){nos.value="__new__";nonv.style.display="block";nonv.value=snap.orgNew;fillDepts("")}
+  else{nos.value=snap.org;fillDepts(snap.org)}
+  if(snap.dept==="__new__"){nds.value="__new__";ndnv.style.display="block";ndnv.value=snap.deptNew;var dt=$("#pf-dept-type");if(dt)dt.style.display="block"}
+  else nds.value=snap.dept;
+  renderAdmIntoSheet({admissions:snap.admissions});
+  var cg=document.querySelectorAll("#care-type-group .chip");
+  for(var i=0;i<cg.length;i++){if(cg[i].getAttribute("data-v")===snap.careType)cg[i].classList.add("on");else cg[i].classList.remove("on")}
+  var dtg=document.querySelectorAll("#pf-dept-type .chip");
+  for(var k=0;k<dtg.length;k++){if(dtg[k].getAttribute("data-v")===snap.deptType)dtg[k].classList.add("on");else dtg[k].classList.remove("on")}
+  updateCareUI();
+  var chips=document.querySelectorAll("#pf-diags .chip");
+  for(var c=0;c<chips.length;c++){var n=chips[c].getAttribute("data-name");if(diags.indexOf(n)>=0)chips[c].classList.add("on")}
+}
+/* ----- 入院记录行（可多条） ----- */
+function admRowHTML(a,idx){
+  var bed=esc(a?a.bed||"":""),admit=esc(a?a.admit||"":""),discharge=esc(a?a.discharge||"":"");
+  var status=a?a.status||"在院":"在院";
+  var disDisp=status==="在院"?"none":"block";
+  var kind=(a&&a.kind)||"入院",aid=(a&&a.id)||"",oid=(a&&a.orgId)||"",did=(a&&a.deptId)||"";
+  var dp=getDept(oid,did);
+  var kindTag=kind==="入院"?'':'<span class="adm-kind">'+esc(kind)+'</span>';
+  return '<div class="adm-row" data-idx="'+idx+'" data-aid="'+esc(aid)+'" data-oid="'+esc(oid)+'" data-did="'+esc(did)+'" data-kind="'+esc(kind)+'">'+
+    '<div class="adm-head"><span class="t">记录 '+(idx+1)+kindTag+(dp?'<span class="adm-dept">'+esc(dp.name)+'</span>':'')+'</span><button class="x" data-action="adm-del" data-idx="'+idx+'">✕</button></div>'+
+    '<div class="adm-grid">'+
+      '<div class="field"><label>床位号</label><input class="adm-bed" value="'+bed+'" placeholder="如 3062"></div>'+
+      '<div class="field"><label>'+(kind==="入院"?"入院日期":"起始日期")+'</label><input class="adm-admit" type="date" value="'+admit+'"></div>'+
+    '</div>'+
+    '<div class="adm-grid" style="margin-top:8px">'+
+      '<div class="field"><label>状态</label><select class="adm-status'+(status!=="在院"?' out':'')+'"><option'+(status==="在院"?" selected":"")+'>在院</option><option'+(status==="换床"?" selected":"")+'>换床</option><option'+(status==="转科"?" selected":"")+'>转科</option><option'+(status==="出院"?" selected":"")+'>出院</option><option'+(status==="死亡"?" selected":"")+'>死亡</option><option'+(status==="转院"?" selected":"")+'>转院</option></select></div>'+
+      '<div class="field"><label>结束日期</label><input class="adm-discharge" type="date" value="'+discharge+'" style="display:'+disDisp+'"></div>'+
+    '</div>'+
+  '</div>';
+}
+function renderAdmIntoSheet(p){
+  var ads=(p&&p.admissions&&p.admissions.length)?p.admissions:[{bed:"",admit:today(),status:"在院",discharge:"",kind:"入院"}];
+  var html="";for(var i=0;i<ads.length;i++)html+=admRowHTML(ads[i],i);
+  var list=$("#adm-list");if(list)list.innerHTML=html;
+}
+function collectAdmissions(){
+  var rows=document.querySelectorAll("#adm-list .adm-row");
+  var out=[];
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    var bed=r.querySelector(".adm-bed").value.trim();
+    var admit=r.querySelector(".adm-admit").value;
+    var status=r.querySelector(".adm-status").value;
+    var dis=r.querySelector(".adm-discharge").value;
+    if(!bed&&!admit)continue;
+    out.push({
+      id:r.getAttribute("data-aid")||uid(),
+      bed:bed,admit:admit,status:status,discharge:status==="在院"?"":dis,
+      orgId:r.getAttribute("data-oid")||null,
+      deptId:r.getAttribute("data-did")||null,
+      kind:r.getAttribute("data-kind")||"入院"
+    });
+  }
+  if(!out.length)out=[{id:uid(),bed:"",admit:"",status:"在院",discharge:"",orgId:null,deptId:null,kind:"入院"}];
+  return out;
+}
+function savePatient(pid){
+  var name=$("#pf-name").value.trim();
+  if(!name){toast("请填写姓名");return}
+  var diags=collectFormDiags();
+  var os=$("#pf-org").value,onv=$("#pf-org-new").value.trim();
+  var finalOrg=onv||(os!=="__new__"?os:"");
+  var ds=$("#pf-dept").value,dnv=$("#pf-dept-new").value.trim();
+  var finalDept=dnv||(ds!=="__new__"?ds:"");
+  var careType;
+  if(ds&&ds!=="__new__"){var exD=getDeptSelected();careType=(exD&&exD.type)||"inpatient"}
+  else if(ds==="__new__"){var dtc=document.querySelector("#pf-dept-type .chip.on");careType=dtc?dtc.getAttribute("data-v"):"inpatient"}
+  else{careType=$("#pf-caretype")?$("#pf-caretype").value:"inpatient"}
+  var org=ensureOrg(finalOrg),dept=org?ensureDept(org,finalDept,careType):null;
+  var p;
+  if(pid){p=getPatient(pid);if(!p)return}
+  else{p={id:uid(),meds:[],rows:[],tdm:[],createdAt:Date.now()};store.data.patients.push(p)}
+  p.name=name;p.recordNo=$("#pf-rec").value.trim();
+  p.gender=$("#pf-gender").value;p.age=$("#pf-age").value.trim();
+  p.careType=careType;
+  if(careType==="outpatient")p.admissions=[];else p.admissions=collectAdmissions();
+  p.orgId=org?org.id:null;p.deptId=dept?dept.id:null;
+  /* 未标注所属科室的记录（新补录的）归到病人当前科室 */
+  (p.admissions||[]).forEach(function(a){if(!a.orgId)a.orgId=p.orgId;if(!a.deptId)a.deptId=p.deptId});
+  p.diagnoses=diags;touch(p);
+  closeSheet();
+  /* 状态已结束但仍显示在列表里时，主动询问是否隐藏 */
+  var endSt=currentStatus(p);
+  var wantHide=false;
+  if(careType!=="outpatient"&&!p.archived&&(endSt==="出院"||endSt==="死亡"||endSt==="转院")){
+    wantHide=confirm("该病人当前状态为「"+endSt+"」。\n是否隐藏其记录？\n\n隐藏后不再出现在科室列表中，全部病历数据仍完整保留，可在首页底部「已隐藏病人」中恢复。");
+    if(wantHide){p.archived=true;p.archivedAt=Date.now();p.archiveReason=endSt;store.save()}
+  }
+  if(wantHide){state.view="home";state.pid=null}
+  else if(!pid){state.pid=p.id;state.view="patient";state.tab="grid"}
+  render();
+  toast(wantHide?"已保存并隐藏":"已保存");
+}
+/* ==================== 换床 / 转科 / 出院·死亡 ==================== */
+/* 一次变更 = 关闭当前「在院」记录 + 追加一条新记录，历史床位与所在科室完整留痕。
+   出院 / 死亡 / 转院则只关闭当前记录，可选同时隐藏该病人。 */
+function openTransferSheet(pid,mode){
+  var p=getPatient(pid);if(!p)return;
+  state.trMode=mode||"bed";
+  openSheet(transferSheetHTML(p));
+}
+function refreshTransferSheet(pid){
+  var p=getPatient(pid);if(!p)return;
+  openSheet(transferSheetHTML(p));
+}
+function transferSheetHTML(p){
+  var mode=state.trMode||"bed";
+  var org=getOrg(p.orgId),dept=getDept(p.orgId,p.deptId);
+  var where=(org?esc(org.name)+" · ":"")+(dept?esc(dept.name):"未分组");
+  var h='<div class="sheet-hd"><div class="t">床位 / 状态变更</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd" id="tr-body">'+
+    '<div class="tr-now">当前：'+where+' · 床 <b>'+esc(currentBed(p)||"—")+'</b>'+
+    (currentStatus(p)&&currentStatus(p)!=="在院"?' <span class="status-pill out">'+esc(currentStatus(p))+'</span>':'')+'</div>'+
+    '<div class="chips mb12">'+
+      '<span class="chip'+(mode==="bed"?" on":"")+'" data-action="tr-mode" data-pid="'+p.id+'" data-v="bed">同科换床</span>'+
+      '<span class="chip'+(mode==="dept"?" on":"")+'" data-action="tr-mode" data-pid="'+p.id+'" data-v="dept">转科 / 转病区</span>'+
+      '<span class="chip'+(mode==="end"?" on":"")+'" data-action="tr-mode" data-pid="'+p.id+'" data-v="end">出院 / 死亡</span>'+
+    '</div>';
+  if(mode==="end"){
+    h+='<div class="frow">'+
+      '<div class="field"><label>结束方式</label><select id="tr-status"><option>出院</option><option>死亡</option><option>转院</option></select></div>'+
+      '<div class="field"><label>日期</label><input id="tr-date" type="date" value="'+today()+'"></div>'+
+    '</div>'+
+    '<label class="tr-check"><input type="checkbox" id="tr-hide" checked> 同时隐藏该病人的记录</label>'+
+    '<div class="muted mt8">隐藏后不再出现在科室列表里，但全部服药单、血药浓度、测评都完整保留；日后再住院时，可在首页底部「已隐藏病人」中恢复。</div>';
+  }else{
+    if(mode==="dept"){
+      var opts='<option value="">请选择目标科室</option>';
+      (store.data.orgs||[]).forEach(function(o){
+        (o.depts||[]).forEach(function(d){
+          var v=o.id+"|"+d.id, sel=(o.id===p.orgId&&d.id===p.deptId)?" selected":"";
+          opts+='<option value="'+esc(v)+'"'+sel+'>'+esc(o.name)+' · '+esc(d.name)+(d.type==="outpatient"?"（门诊）":"")+'</option>';
+        });
+      });
+      h+='<div class="field mb12"><label>转入科室 / 病区</label><select id="tr-dept-pick">'+opts+'</select></div>';
+    }
+    h+='<div class="frow">'+
+      '<div class="field"><label>新床位号</label><input id="tr-bed" placeholder="如 3062" value=""></div>'+
+      '<div class="field"><label>生效日期</label><input id="tr-date" type="date" value="'+today()+'"></div>'+
+    '</div>'+
+    '<div class="muted mt8">'+(mode==="dept"
+      ?'转科后病人会移动到新科室的列表中；原科室的住院区间与床位仍保留在入院记录里。'
+      :'原床位记录会自动结束，并新开一条在院记录，历史床位可追溯。')+'</div>';
+  }
+  h+='<button class="btn btn-block mt16" data-action="tr-save" data-pid="'+p.id+'">确认</button></div>';
+  return h;
+}
+function saveTransfer(pid){
+  var p=getPatient(pid);if(!p)return;
+  var mode=state.trMode||"bed";
+  var dEl=$("#tr-date"),date=(dEl&&dEl.value)||today();
+  var cur=currentAdmission(p);
+  if(!p.admissions)p.admissions=[];
+  if(mode==="end"){
+    var st=$("#tr-status").value;
+    if(cur&&cur.status==="在院"){cur.status=st;cur.discharge=date}
+    else p.admissions.push({id:uid(),bed:currentBed(p)||"",admit:date,discharge:date,status:st,orgId:p.orgId||null,deptId:p.deptId||null,kind:"入院"});
+    var hide=!!($("#tr-hide")&&$("#tr-hide").checked);
+    if(hide){p.archived=true;p.archivedAt=Date.now();p.archiveReason=st}
+    touch(p);closeSheet();
+    if(hide){state.view="home";state.pid=null}
+    render();toast(hide?("已登记"+st+"，记录已隐藏"):("已登记"+st));
+    return;
+  }
+  var bed=(($("#tr-bed")&&$("#tr-bed").value)||"").trim();
+  var tOrgId=p.orgId,tDeptId=p.deptId;
+  if(mode==="dept"){
+    var v=$("#tr-dept-pick")?$("#tr-dept-pick").value:"";
+    if(!v){toast("请选择转入科室");return}
+    var parts=v.split("|");tOrgId=parts[0];tDeptId=parts[1];
+    if(tOrgId===p.orgId&&tDeptId===p.deptId&&!bed){toast("科室未变化，如仅换床请选「同科换床」");return}
+  }else if(!bed){toast("请填写新床位号");return}
+  if(cur&&cur.status==="在院"){cur.status=(mode==="dept"?"转科":"换床");cur.discharge=date}
+  p.admissions.push({id:uid(),bed:bed,admit:date,discharge:"",status:"在院",orgId:tOrgId||null,deptId:tDeptId||null,kind:(mode==="dept"?"转科":"换床")});
+  p.orgId=tOrgId||null;p.deptId=tDeptId||null;
+  var nd=getDept(tOrgId,tDeptId);if(nd)p.careType=nd.type||"inpatient";
+  touch(p);closeSheet();render();
+  toast(mode==="dept"?"已转科":"已换床");
+}
+function toggleArchive(pid,val){
+  var p=getPatient(pid);if(!p)return;
+  p.archived=!!val;
+  if(p.archived){
+    p.archivedAt=Date.now();
+    p.archiveReason=currentStatus(p)&&currentStatus(p)!=="在院"?currentStatus(p):"手动隐藏";
+  }else{p.archivedAt=null;p.archiveReason=""}
+  touch(p);
+  if(p.archived){state.view="home";state.pid=null}
+  render();
+  toast(p.archived?"已隐藏，可在首页「已隐藏病人」中恢复":"已恢复显示");
+}
+function delPatient(pid){
+  if(!confirm("确定删除该病人的全部记录吗？此操作不可恢复。"))return;
+  store.data.patients=store.data.patients.filter(function(x){return x.id!==pid});
+  store.save();closeSheet();state.view="home";state.pid=null;render();toast("已删除");
+}
+
+/* ==================== 病人详情页 ==================== */
+function renderPatient(){
+  var p=getPatient(state.pid);
+  if(!p){state.view="home";renderHome();return}
+  var org=getOrg(p.orgId),dept=getDept(p.orgId,p.deptId);
+  var cs=currentStatus(p);
+  var ct=getCareType(p);
+  var subParts=[p.gender,p.age?p.age+"岁":""];
+  if(ct==="outpatient")subParts.push("门诊");
+  else if(currentBed(p))subParts.push("床 "+currentBed(p));
+  var h='<div class="appbar"><button class="backbtn" data-action="nav-home">‹</button>'+
+    '<h1>'+esc(p.name)+'<span class="sub">'+esc(subParts.filter(Boolean).join(" · "))+'</span></h1>'+
+    '<button data-action="edit-patient" data-pid="'+p.id+'">编辑</button></div>';
+  h+='<div class="pinfo-bar"><div class="m">'+(org&&dept?esc(org.name)+' · '+esc(dept.name):(org?esc(org.name):(dept?esc(dept.name):"未分组")))+(ct==="outpatient"?' <span class="status-pill out">门诊</span>':'')+'</div>';
+  if(ct==="outpatient"){
+    h+='<div class="m">病案号 '+esc(p.recordNo||"—")+' · <b>门诊管理</b> · 诊断 '+esc((p.diagnoses||[]).join("、")||"—")+'</div></div>';
+  }else{
+    h+='<div class="m">病案号 '+esc(p.recordNo||"—")+' · 床位 '+esc(currentBed(p)||"—")+(cs?' <span class="status-pill'+(cs!=="在院"?' out':'')+'">'+esc(cs)+'</span>':'')+' · 诊断 '+esc((p.diagnoses||[]).join("、")||"—")+'</div></div>';
+  }
+  if(isArchived(p))h+='<div class="arch-banner">该病人已隐藏（'+esc(p.archiveReason||"手动隐藏")+'），不显示在科室列表中。<button data-action="archive-toggle" data-pid="'+p.id+'" data-v="0">恢复显示</button></div>';
+  h+='<div class="quick-acts">';
+  if(ct!=="outpatient"){
+    h+='<button data-action="tr-open" data-pid="'+p.id+'" data-mode="bed">🛏 换床 / 转科</button>'+
+       '<button data-action="tr-open" data-pid="'+p.id+'" data-mode="end">🚪 出院 / 死亡</button>';
+  }
+  if(!isArchived(p))h+='<button data-action="archive-toggle" data-pid="'+p.id+'" data-v="1">🙈 隐藏记录</button>';
+  h+='</div>';
+  h+='<div class="tabs">'+
+    '<button data-action="tab" data-tab="grid" class="'+(state.tab==="grid"?"on":"")+'">服药单</button>'+
+    '<button data-action="tab" data-tab="tdm" class="'+(state.tab==="tdm"?"on":"")+'">血药浓度</button>'+
+    '<button data-action="tab" data-tab="scale" class="'+(state.tab==="scale"?"on":"")+'">测评</button>'+
+    '<button data-action="tab" data-tab="info" class="'+(state.tab==="info"?"on":"")+'">信息</button></div>';
+  if(state.tab==="grid")h+=renderGridTab(p);
+  else if(state.tab==="tdm")h+=renderTdmTab(p);
+  else if(state.tab==="scale")h+=renderScaleTab(p);
+  else h+=renderInfoTab(p);
+  $("#app").innerHTML=h;
+}
+
+/* ---------- 服药单网格 ---------- */
+/* 合并用药日期与血药浓度日期为统一时间轴，并推算每种药在各时点的停用状态 */
+function buildTimeline(p){
+  var dates=p.rows.map(function(r){return r.date});
+  (p.tdm||[]).forEach(function(t){if(dates.indexOf(t.date)<0)dates.push(t.date)});
+  dates.sort();
+  var rowMap={};p.rows.forEach(function(r){rowMap[r.date]=r});
+  var tdmMap={};
+  (p.tdm||[]).forEach(function(t){
+    if(!tdmMap[t.date])tdmMap[t.date]={};
+    if(!tdmMap[t.date][t.med])tdmMap[t.date][t.med]=[];
+    tdmMap[t.date][t.med].push(t);
+  });
+  var stopState={};
+  for(var i=0;i<p.meds.length;i++){
+    var m=p.meds[i],stopped=false,arr=[];
+    for(var di=0;di<dates.length;di++){
+      var row=rowMap[dates[di]];
+      var cells=row&&row.cells?row.cells[m.id]:null;
+      if(cells){
+        var hs=false,hd=false;
+        for(var k=0;k<3;k++){
+          var v=cells[SLOTS[k].k];
+          if(v==="停")hs=true;else if(v&&v!=="/")hd=true;
+        }
+        if(hs)stopped=true;
+        if(hd)stopped=false;
+      }
+      arr.push(stopped);
+    }
+    stopState[m.id]=arr;
+  }
+  return {dates:dates,rowMap:rowMap,tdmMap:tdmMap,stopState:stopState};
+}
+/* 血药浓度异常判定：返回 high / low / ok / "" */
+function tdmClass(medName,recs){
+  var lib=findDrug(medName),worst="";
+  for(var i=0;i<recs.length;i++){
+    var t=recs[i];
+    if(lib&&lib.tdm&&lib.tdm.u===t.u){
+      var v=parseFloat(t.value);
+      if(!isNaN(v)){
+        if(v>lib.tdm.hi)return "high";
+        if(v<lib.tdm.lo)worst="low";
+        else if(!worst)worst="ok";
+      }
+    }
+  }
+  return worst;
+}
+function renderGridTab(p){
+  var h='<div class="toolbar">'+
+    '<button class="btn btn-sm" data-action="add-date">＋ 日期</button>'+
+    '<button class="btn btn-sm" data-action="add-med">＋ 药物</button>'+
+    '<button class="btn btn-sm" data-action="ocr-grid">📷 识别</button>'+
+    '<button class="btn btn-sm btn-ghost" data-action="print-grid">打印</button></div>';
+  if(!p.meds.length){
+    h+='<div class="empty">尚未添加药物<br><br><button class="btn" data-action="add-med">从药品库添加</button></div>';
+    return h;
+  }
+  var meds=p.meds.filter(function(m){return !m.hidden});
+  if(!meds.length){
+    h+='<div class="empty">所有药物已隐藏，点下方「已隐藏药物」可恢复显示。</div>';
+    h+=hiddenMedsHTML(p);
+    return h;
+  }
+  var tl=buildTimeline(p);
+  h+='<div class="grid-wrap"><table class="grid"><thead><tr><th class="corner">日期\\时间</th><th class="corner2"></th>';
+  for(var i=0;i<meds.length;i++){
+    var m=meds[i];
+    var isStopped=tl.dates.length&&tl.stopState[m.id][tl.dates.length-1];
+    h+='<th class="dcol" data-action="med-head" data-mid="'+m.id+'"><div class="dn'+(isStopped?' dn-stop':'')+'">'+esc(m.name)+(isStopped?'<span class="stopbadge">停</span>':'')+'</div><div class="df">'+esc(medSub(m))+'</div></th>';
+  }
+  h+='</tr></thead><tbody>';
+  if(!tl.dates.length){
+    h+='<tr><td colspan="'+(meds.length+2)+'" style="padding:30px;text-align:center;color:var(--text-sub)">暂无记录，点击上方「＋ 日期」开始记录</td></tr>';
+  }
+  var prevBed="__none__";
+  var isInpatient=getCareType(p)==="inpatient";
+  for(var di=0;di<tl.dates.length;di++){
+    var d=tl.dates[di];
+    var row=tl.rowMap[d]||null;
+    var rid=row?row.id:("v_"+d);
+    var tdmOnDate=tl.tdmMap[d]||null;
+    var subRows=tdmOnDate?4:3;
+    var bedHere=isInpatient?bedAtDate(p,d):"";
+    var showBed=isInpatient&&(di===0||bedHere!==prevBed);
+    prevBed=bedHere;
+    for(var s=0;s<3;s++){
+      var slot=SLOTS[s];
+      h+='<tr>';
+      if(s===0)h+='<td class="datecol" rowspan="'+subRows+'" data-action="date-cell" data-rid="'+rid+'">'+md(d)+'<span class="wk">'+wk(d)+'</span>'+(showBed&&bedHere?'<span class="bedtag">床'+esc(bedHere)+'</span>':'')+'</td>';
+      h+='<td class="slotcol">'+slot.t+'</td>';
+      for(var mi=0;mi<meds.length;mi++){
+        var med=meds[mi];
+        var cell=(row&&row.cells&&row.cells[med.id])?row.cells[med.id][slot.k]:"";
+        var cls="v",txt=cell,tdCls="cell";
+        if(cell==="停"){cls="stop";txt="停";tdCls+=" stop-cell"}
+        else if(cell==="/"){cls="same";txt="/"}
+        else if(!cell&&tl.stopState[med.id][di])tdCls+=" stopped-period";
+        h+='<td class="'+tdCls+'" data-action="cell" data-rid="'+rid+'" data-mid="'+med.id+'" data-slot="'+slot.k+'">'+(cell?'<span class="'+cls+'">'+esc(txt)+'</span>':'')+'</td>';
+      }
+      h+='</tr>';
+    }
+    if(tdmOnDate){
+      h+='<tr><td class="slotcol slot-blood">血</td>';
+      var seenTdm={};
+      for(var bi=0;bi<meds.length;bi++){
+        var bmed=meds[bi];
+        var recs=tdmOnDate[bmed.name];
+        if(recs&&recs.length&&!seenTdm[bmed.name]){
+          seenTdm[bmed.name]=true;
+          var cls2=tdmClass(bmed.name,recs);
+          var bcls=cls2==="high"?" tdm-high":(cls2==="low"?" tdm-low":(cls2==="ok"?" tdm-ok":""));
+          var vals=recs.map(function(t){return t.value}).join("/");
+          h+='<td class="cell'+bcls+'" data-action="tdm-cell" title="血药浓度"><span class="tv">'+esc(vals)+'</span><span class="tu">'+esc(recs[0].u)+'</span></td>';
+        }else{
+          h+='<td class="cell cell-blood-empty" data-action="tdm-cell"></td>';
+        }
+      }
+      h+='</tr>';
+    }
+  }
+  h+='</tbody></table></div>';
+  h+=hiddenMedsHTML(p);
+  h+='<div class="grid-legend">点格子填剂量 · 点药名调频率/方式 · 点日期改/删该日<br>'+
+  '<span style="display:inline-block;width:10px;height:10px;background:#fee2e2;border:1px solid #fca5a5;border-radius:2px;margin-right:4px"></span>红底＝停药及停用期间　'+
+  '「血」行＝血药浓度：<span style="color:#b91c1c">红=偏高</span> <span style="color:#1d4ed8">蓝=偏低</span> <span style="color:#15803d">绿=正常</span></div>';
+  return h;
+}
+/* 已隐藏药物：在服药单底部提供恢复入口 */
+function hiddenMedsHTML(p){
+  var hs=p.meds.filter(function(m){return m.hidden});
+  if(!hs.length)return "";
+  return '<div class="hidden-meds"><span class="hm-t">已隐藏药物：</span>'+
+    hs.map(function(m){return '<span class="chip" data-action="med-toggle-hide" data-mid="'+m.id+'">'+esc(m.name)+' · 显示</span>'}).join(" ")+
+    '<div class="hm-tip">停药后的药物可在此恢复显示到服药单</div></div>';
+}
+
+/* ---------- 日期 ---------- */
+function openAddDate(){
+  var p=getPatient(state.pid);
+  var h='<div class="sheet-hd"><div class="t">添加记录日期</div><button class="x" data-action="sheet-close">✕</button></div>'+
+  '<div class="sheet-bd"><div class="field"><label>日期</label><input id="nd-date" type="date" value="'+today()+'"></div>'+
+  '<button class="btn btn-block" data-action="date-save">添加</button></div>';
+  openSheet(h);
+}
+function saveNewDate(){
+  var d=$("#nd-date").value;if(!d){toast("请选择日期");return}
+  var p=getPatient(state.pid);
+  for(var i=0;i<p.rows.length;i++){if(p.rows[i].date===d){closeSheet();toast("该日期已存在");return}}
+  p.rows.push({id:uid(),date:d,cells:{}});
+  p.rows.sort(function(a,b){return a.date<b.date?-1:1});
+  touch(p);closeSheet();render();toast("已添加");
+}
+function openDateSheet(rid){
+  var p=getPatient(state.pid);
+  if(rid.indexOf("v_")===0){
+    var vd=rid.slice(2);
+    var vh='<div class="sheet-hd"><div class="t">日期 '+esc(vd)+'</div><button class="x" data-action="sheet-close">✕</button></div>'+
+    '<div class="sheet-bd"><div class="muted" style="margin-bottom:14px">该日期目前只有血药浓度记录，尚无用药记录。</div>'+
+    '<button class="btn btn-block" data-action="row-create" data-date="'+esc(vd)+'">添加为该日用药记录</button></div>';
+    openSheet(vh);return;
+  }
+  var row=null;for(var i=0;i<p.rows.length;i++)if(p.rows[i].id===rid)row=p.rows[i];
+  if(!row)return;
+  var h='<div class="sheet-hd"><div class="t">日期 '+esc(row.date)+'</div><button class="x" data-action="sheet-close">✕</button></div>'+
+  '<div class="sheet-bd"><div class="field"><label>修改日期</label><input id="rd-date" type="date" value="'+esc(row.date)+'"></div>'+
+  '<button class="btn btn-block" data-action="row-date-save" data-rid="'+rid+'">保存日期</button>'+
+  '<div class="mt12"><button class="btn btn-danger btn-block" data-action="row-del" data-rid="'+rid+'">删除该日全部记录</button></div></div>';
+  openSheet(h);
+}
+function saveRowDate(rid){
+  var d=$("#rd-date").value;if(!d)return;
+  var p=getPatient(state.pid);
+  for(var i=0;i<p.rows.length;i++)if(p.rows[i].id!==rid&&p.rows[i].date===d){toast("该日期已存在");return}
+  for(var j=0;j<p.rows.length;j++)if(p.rows[j].id===rid)p.rows[j].date=d;
+  p.rows.sort(function(a,b){return a.date<b.date?-1:1});
+  touch(p);closeSheet();render();toast("已保存");
+}
+function delRow(rid){
+  if(!confirm("删除该日期的全部用药记录？"))return;
+  var p=getPatient(state.pid);
+  p.rows=p.rows.filter(function(r){return r.id!==rid});
+  touch(p);closeSheet();render();toast("已删除");
+}
+
+/* ---------- 药物 ---------- */
+function openAddMed(){
+  var p=getPatient(state.pid);
+  var recs=getMedRecommendByDiag(p);
+  var recHtml=recs.length?sgBarHtml("💡 根据诊断与录入历史推荐（点一下直接进入配置）",recs.map(function(r){return {label:r.name,count:r.count,attrs:{name:r.name}};}),"med-pick",{slim:true}):"";
+  var h='<div class="sheet-hd"><div class="t">添加药物</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">'+
+  recHtml+
+  '<div class="field"><input id="am-search" placeholder="搜索药名…"></div><div id="am-list">';
+  for(var i=0;i<DRUG_LIB.length;i++){
+    var cat=DRUG_LIB[i];
+    h+='<div class="am-cat"><div class="sect-t">'+esc(cat.cat)+'</div><div class="chips">';
+    for(var j=0;j<cat.drugs.length;j++)h+='<span class="chip" data-action="med-pick" data-name="'+esc(cat.drugs[j].n)+'">'+esc(cat.drugs[j].n)+'</span>';
+    h+='</div></div>';
+  }
+  h+='</div><div class="sect-t">自定义</div><div class="row"><input id="am-custom" placeholder="其他药名" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font-size:15px">'+
+  '<button class="btn btn-sm" data-action="med-custom">添加</button></div>'+
+  '<button class="btn btn-block mt12" data-action="drug-lib-mgr">⚙ 管理药品库（增删自定义药名）</button></div>';
+  openSheet(h);
+  $("#am-search").addEventListener("input",function(){
+    var k=this.value.trim();
+    var cats=document.querySelectorAll("#am-list .am-cat");
+    for(var i=0;i<cats.length;i++){
+      var chips=cats[i].querySelectorAll(".chip"),vis=0;
+      for(var j=0;j<chips.length;j++){
+        var show=!k||chips[j].getAttribute("data-name").indexOf(k)>=0;
+        chips[j].style.display=show?"":"none";
+        if(show)vis++;
+      }
+      cats[i].style.display=vis?"":"none";
+    }
+  });
+}
+function openMedConfig(name){
+  var lib=findDrug(name);
+  var h='<div class="sheet-hd"><div class="t">'+esc(name)+'</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">'+
+  renderMedSuggestHtml(name)+
+  '<div class="frow">'+
+  '<div class="field"><label>剂型（可选）</label><input id="mc-form" list="mc-form-list" placeholder="片剂/针剂/胶囊" style="width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;font-size:15px"></div>'+
+  '<div class="field"><label>规格（可选）</label><input id="mc-strength" list="mc-strength-list" placeholder="1mg/25mg/0.5g" style="width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;font-size:15px"></div>'+
+  '</div>'+
+  '<div class="frow">'+
+  '<div class="field"><label>用药频率</label><select id="mc-freq">'+FREQS.map(function(f){return '<option>'+f+'</option>'}).join("")+'</select></div>'+
+  '<div class="field"><label>服用方式</label><select id="mc-route">'+ROUTES.map(function(r,i){return '<option'+(i===0?' selected':'')+'>'+r+'</option>'}).join("")+'</select></div>'+
+  '</div>'+
+  '<datalist id="mc-form-list">'+["片剂","胶囊","针剂","口服液","口腔崩解片","透皮贴剂","栓剂","溶液","颗粒","混悬液"].map(function(x){return '<option value="'+x+'"></option>'}).join("")+'</datalist>'+
+  '<datalist id="mc-strength-list">'+["0.5mg","1mg","2mg","5mg","10mg","25mg","50mg","100mg","200mg","0.25g","0.5g","1g"].map(function(x){return '<option value="'+x+'"></option>'}).join("")+'</datalist>'+
+  (lib&&lib.tdm?'<div class="muted mt8">该药建议定期监测血药浓度（参考 '+lib.tdm.lo+'-'+lib.tdm.hi+' '+lib.tdm.u+'）</div>':'')+
+  '<div class="muted mt8">同一药品可多次添加不同剂型/规格（如 利培酮 1mg 片剂 + 利培酮 25mg 针剂）。</div>'+
+  '<div class="mt16"><button class="btn btn-block" data-action="med-confirm" data-name="'+esc(name)+'">添加到服药单</button></div></div>';
+  openSheet(h);
+  // 推荐预填：有历史则把最常用组合直接填进四个字段，可一键采纳或改选
+  var sg=getMedSuggestion(name);
+  if(sg&&sg.topCombos.length){
+    var top=sg.topCombos[0].parts;
+    var pf=$("#mc-form"),ps=$("#mc-strength");
+    if(pf&&top[0])pf.value=top[0];
+    if(ps&&top[1])ps.value=top[1];
+    if(top[2]){var sf=$("#mc-freq");if(sf)sf.value=top[2];}
+    if(top[3]){var sr=$("#mc-route");if(sr)sr.value=top[3];}
+  }else{
+    /* 该药暂无历史：退回到你整体的用药习惯（全局最常用频率/方式） */
+    var gd=getGlobalMedDefaults();
+    $("#mc-freq").value=gd.freq||"bid 每日两次";
+    if(gd.route)$("#mc-route").value=gd.route;
+  }
+}
+function confirmAddMed(name){
+  var p=getPatient(state.pid);
+  var form=$("#mc-form").value.trim(), strength=$("#mc-strength").value.trim();
+  for(var i=0;i<p.meds.length;i++){
+    if(p.meds[i].name===name&&(p.meds[i].form||"")===form&&(p.meds[i].strength||"")===strength){toast("该剂型规格已在服药单中");return}
+  }
+  var lib=findDrug(name);
+  var freqVal=$("#mc-freq").value, routeVal=$("#mc-route").value;
+  p.meds.push({id:uid(),name:name,form:form,strength:strength,freq:freqVal,route:routeVal,doses:lib?lib.d.slice():[]});
+  ensureDrug(name);
+  touch(p);closeSheet();render();toast("已添加");
+}
+function openMedSheet(mid){
+  var p=getPatient(state.pid);
+  var m=null;for(var i=0;i<p.meds.length;i++)if(p.meds[i].id===mid)m=p.meds[i];
+  if(!m)return;
+  var lib=findDrug(m.name);
+  var h='<div class="sheet-hd"><div class="t">'+esc(medLabel(m))+'</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">'+
+  renderMedSuggestHtml(m.name)+
+  '<div class="frow">'+
+  '<div class="field"><label>剂型</label><input id="mh-form" list="mh-form-list" value="'+esc(m.form||"")+'" placeholder="片剂/针剂" style="width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;font-size:15px"></div>'+
+  '<div class="field"><label>规格</label><input id="mh-strength" value="'+esc(m.strength||"")+'" placeholder="1mg/25mg/0.5g" style="width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;font-size:15px"></div>'+
+  '</div>'+
+  '<div class="frow">'+
+  '<div class="field"><label>用药频率</label><select id="mh-freq">'+FREQS.map(function(f){return '<option'+(f===m.freq?' selected':'')+'>'+f+'</option>'}).join("")+'</select></div>'+
+  '<div class="field"><label>服用方式</label><select id="mh-route">'+ROUTES.map(function(r){return '<option'+(r===m.route?' selected':'')+'>'+r+'</option>'}).join("")+'</select></div>'+
+  '</div>'+
+  '<datalist id="mh-form-list">'+["片剂","胶囊","针剂","口服液","口腔崩解片","透皮贴剂","栓剂","溶液","颗粒","混悬液"].map(function(x){return '<option value="'+x+'"></option>'}).join("")+'</datalist>'+
+  '<div class="field"><label>常用剂量（逗号分隔，点格子时可快捷选择）</label><input id="mh-doses" value="'+esc((m.doses||[]).join(","))+'"></div>'+
+  (lib&&lib.tdm?'<div class="muted">血药浓度参考范围：'+lib.tdm.lo+'-'+lib.tdm.hi+' '+lib.tdm.u+(lib.tdm.ref?'（'+esc(lib.tdm.ref)+'）':'')+'</div>':'')+
+  '<div class="mt16"><button class="btn btn-block" data-action="med-save" data-mid="'+mid+'">保存设置</button></div>'+
+  '<div class="frow mt12">'+
+  '<button class="btn btn-ghost grow" data-action="med-move" data-mid="'+mid+'" data-dir="-1">← 左移</button>'+
+  '<button class="btn btn-ghost grow" data-action="med-move" data-mid="'+mid+'" data-dir="1">右移 →</button></div>'+
+  '<div class="mt12"><button class="btn btn-block" data-action="med-goto-tdm" data-name="'+esc(m.name)+'">记录血药浓度</button></div>'+
+  '<div class="mt12"><button class="btn btn-ghost btn-block" data-action="med-toggle-hide" data-mid="'+mid+'">'+(m.hidden?'显示该药（已隐藏）':'隐藏该药（停药后更简洁）')+'</button></div>'+
+  '<div class="mt12"><button class="btn btn-danger btn-block" data-action="med-del" data-mid="'+mid+'">从服药单删除该药</button></div></div>';
+  openSheet(h);
+}
+function saveMedSheet(mid){
+  var p=getPatient(state.pid);
+  var m=null;for(var i=0;i<p.meds.length;i++)if(p.meds[i].id===mid)m=p.meds[i];
+  if(!m)return;
+  m.form=$("#mh-form").value.trim();m.strength=$("#mh-strength").value.trim();
+  m.freq=$("#mh-freq").value;m.route=$("#mh-route").value;
+  m.doses=$("#mh-doses").value.split(/[,，]/).map(function(s){return s.trim()}).filter(Boolean);
+  touch(p);closeSheet();render();toast("已保存");
+}
+function moveMed(mid,dir){
+  var p=getPatient(state.pid);
+  var i=-1;for(var j=0;j<p.meds.length;j++)if(p.meds[j].id===mid)i=j;
+  var t=i+parseInt(dir);
+  if(i<0||t<0||t>=p.meds.length)return;
+  var tmp=p.meds[i];p.meds[i]=p.meds[t];p.meds[t]=tmp;
+  touch(p);openMedSheet(mid);render();
+}
+function delMed(mid){
+  if(!confirm("删除该药及其所有剂量记录？"))return;
+  var p=getPatient(state.pid);
+  p.meds=p.meds.filter(function(m){return m.id!==mid});
+  for(var i=0;i<p.rows.length;i++){if(p.rows[i].cells)delete p.rows[i].cells[mid]}
+  touch(p);closeSheet();render();toast("已删除");
+}
+/* 隐藏 / 显示某药：隐藏后该药不再出现在服药单（数据完整保留） */
+function toggleMedHide(mid){
+  var p=getPatient(state.pid);
+  var m=null;for(var i=0;i<p.meds.length;i++)if(p.meds[i].id===mid)m=p.meds[i];
+  if(!m)return;
+  m.hidden=!m.hidden;
+  touch(p);closeSheet();render();
+  toast(m.hidden?"已隐藏（停药药物不再显示在服药单，可在底部「已隐藏药物」恢复）":"已恢复显示");
+}
+
+/* ---------- 单元格 ---------- */
+function openCellSheet(rid,mid,slot){
+  var p=getPatient(state.pid);
+  var m=null,row=null,vdate=null;
+  for(var i=0;i<p.meds.length;i++)if(p.meds[i].id===mid)m=p.meds[i];
+  if(rid.indexOf("v_")===0){vdate=rid.slice(2)}
+  else{for(var j=0;j<p.rows.length;j++)if(p.rows[j].id===rid)row=p.rows[j]}
+  if(!m||(!row&&!vdate))return;
+  state.editCell={rid:row?row.id:null,vdate:vdate,mid:mid,slot:slot};
+  var dateLabel=row?row.date:vdate;
+  var cur=(row&&row.cells&&row.cells[mid])?row.cells[mid][slot]:"";
+  var slotName=slot==="m"?"早":(slot==="n"?"中":"晚");
+  var doses=m.doses&&m.doses.length?m.doses:(findDrug(m.name)?findDrug(m.name).d:[]);
+  /* 你实际写过的剂量（按频次）置顶，药品库预设剂量去重后排在其后 */
+  var favDose=getDoseSuggestion(m.name,6);
+  var favSet={};favDose.forEach(function(x){favSet[x.val]=1});
+  var restDoses=doses.filter(function(d){return !favSet[d]});
+  var h='<div class="sheet-hd"><div class="t">'+esc(medLabel(m))+' · '+md(dateLabel)+' '+slotName+'</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">';
+  if(cur)h+='<div class="muted" style="margin-bottom:10px">当前：<b>'+esc(cur)+'</b></div>';
+  h+=sgBarHtml("💡 你常用的剂量（按历史填写频次）",favDose.map(function(x){
+    return {label:x.val,count:x.count,attrs:{val:x.val}};
+  }),"chip-dose",{slim:true});
+  if(restDoses.length){h+='<div class="sect-t">'+(favDose.length?'药品库预设剂量':'常用剂量')+'</div><div class="chips">';for(var d=0;d<restDoses.length;d++)h+='<span class="chip dose" data-action="chip-dose" data-val="'+esc(restDoses[d])+'">'+esc(restDoses[d])+'</span>';h+='</div>'}
+  h+='<div class="sect-t">片数</div><div class="chips">'+
+    ['1/4片','1/2片','3/4片','1片','1.5片','2片'].map(function(x){return '<span class="chip" data-action="chip-dose" data-val="'+x+'">'+x+'</span>'}).join("")+'</div>';
+  h+='<div class="sect-t">其他</div><div class="chips">'+
+    '<span class="chip" data-action="chip-dose" data-val="/">同前（复制上日剂量）</span>'+
+    '<span class="chip warnchip" data-action="chip-dose" data-val="停">停药</span>'+
+    (cur?'<span class="chip" data-action="chip-dose" data-val="">清空</span>':'')+'</div>';
+  h+='<div class="sect-t">自定义</div><div class="row"><input id="cell-custom" placeholder="如 0.125g、隔日1片" style="flex:1;padding:11px 12px;border:1px solid var(--line);border-radius:9px;font-size:16px">'+
+  '<button class="btn btn-sm" data-action="cell-custom-save">确定</button></div></div>';
+  openSheet(h);
+}
+/* 复制该药在「上一日」同时间段的剂量（跳过空值与前次的"/"标记） */
+function prevDoseValue(p,mid,slot,curDate){
+  var best=null,bestDate=null;
+  for(var i=0;i<p.rows.length;i++){
+    var r=p.rows[i];
+    if(!r.date||r.date>=curDate)continue;
+    var v=r.cells&&r.cells[mid]?r.cells[mid][slot]:"";
+    if(v&&v!=="/"){if(bestDate===null||r.date>bestDate){bestDate=r.date;best=v}}
+  }
+  return best;
+}
+function setCell(val){
+  var c=state.editCell;if(!c)return;
+  var p=getPatient(state.pid);
+  var row=null;
+  if(c.rid){for(var j=0;j<p.rows.length;j++)if(p.rows[j].id===c.rid)row=p.rows[j]}
+  else if(c.vdate){
+    for(var k=0;k<p.rows.length;k++)if(p.rows[k].date===c.vdate)row=p.rows[k];
+    if(!row){
+      row={id:uid(),date:c.vdate,cells:{}};
+      p.rows.push(row);
+      p.rows.sort(function(a,b){return a.date<b.date?-1:1});
+    }
+  }
+  if(!row)return;
+  var curDate=row.date;
+  if(val==="/"){ /* 同前：复制上一日该药同时间段的实际剂量，而不是显示"/" */
+    var prev=prevDoseValue(p,c.mid,c.slot,curDate);
+    val=(prev==null?"":prev);
+  }
+  if(!row.cells)row.cells={};
+  if(!row.cells[c.mid])row.cells[c.mid]={m:"",n:"",e:""};
+  row.cells[c.mid][c.slot]=val;
+  touch(p);closeSheet();render();
+}
+
+/* ---------- 血药浓度 ---------- */
+function renderTdmTab(p){
+  var h='<div class="toolbar"><button class="btn btn-sm" data-action="add-tdm">＋ 添加检测记录</button></div>';
+  if(!p.tdm||!p.tdm.length){
+    h+='<div class="empty">暂无血药浓度记录<br><span style="font-size:12px">锂盐、丙戊酸盐、卡马西平、氯氮平等药物建议定期监测</span></div>';
+    return h;
+  }
+  var groups={};
+  for(var i=0;i<p.tdm.length;i++){var t=p.tdm[i];if(!groups[t.med])groups[t.med]=[];groups[t.med].push(t)}
+  var names=Object.keys(groups);
+  for(var g=0;g<names.length;g++){
+    var name=names[g];
+    var recs=groups[name].slice().sort(function(a,b){return a.date<b.date?-1:1});
+    var lib=findDrug(name);
+    h+='<div class="tdm-card"><div class="row"><span class="mn">'+esc(name)+'</span>';
+    if(lib&&lib.tdm)h+='<span class="range">参考 '+lib.tdm.lo+'-'+lib.tdm.hi+' '+lib.tdm.u+'</span>';
+    h+='</div>';
+    if(recs.length>=2)h+=sparkline(recs,lib&&lib.tdm?lib.tdm:null);
+    for(var r=recs.length-1;r>=0;r--){
+      var t=recs[r];var badge="";
+      if(lib&&lib.tdm&&lib.tdm.u===t.u){
+        var v=parseFloat(t.value);
+        if(!isNaN(v)){
+          if(v<lib.tdm.lo)badge='<span class="badge badge-low">偏低</span>';
+          else if(v>lib.tdm.hi)badge='<span class="badge badge-high">偏高</span>';
+          else badge='<span class="badge badge-ok">正常</span>';
+        }
+      }
+      h+='<div class="tdm-rec"><span class="d">'+esc(t.date)+'</span>'+
+      '<span class="val">'+esc(t.value)+'</span><span class="u">'+esc(t.u)+'</span>'+badge+
+      (t.note?'<span class="muted" style="margin-left:6px">'+esc(t.note)+'</span>':'')+
+      '<button class="del" data-action="tdm-edit" data-tid="'+t.id+'" style="margin-left:auto" title="编辑">✎</button>'+
+      '<button class="del" data-action="tdm-del" data-tid="'+t.id+'" style="margin-left:6px" title="删除">✕</button></div>';
+    }
+    h+='</div>';
+  }
+  return h;
+}
+function sparkline(recs,tdm){
+  var W=300,H=56,pad=6;
+  var vals=recs.map(function(r){return parseFloat(r.value)}).filter(function(v){return !isNaN(v)});
+  if(vals.length<2)return "";
+  var min=Math.min.apply(null,vals),max=Math.max.apply(null,vals);
+  if(tdm){min=Math.min(min,tdm.lo);max=Math.max(max,tdm.hi)}
+  if(max===min){max=min+1}
+  function Y(v){return H-pad-((v-min)/(max-min))*(H-2*pad)}
+  var pts=[];
+  for(var i=0;i<recs.length;i++){var v=parseFloat(recs[i].value);if(isNaN(v))continue;pts.push([pad+i*(W-2*pad)/(recs.length-1),Y(v)])}
+  var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block">';
+  if(tdm){
+    s+='<line x1="0" y1="'+Y(tdm.lo)+'" x2="'+W+'" y2="'+Y(tdm.lo)+'" stroke="#93c5fd" stroke-dasharray="4 3" stroke-width="1"/>';
+    s+='<line x1="0" y1="'+Y(tdm.hi)+'" x2="'+W+'" y2="'+Y(tdm.hi)+'" stroke="#fca5a5" stroke-dasharray="4 3" stroke-width="1"/>';
+  }
+  var path=pts.map(function(p,i){return (i===0?"M":"L")+p[0].toFixed(1)+","+p[1].toFixed(1)}).join(" ");
+  s+='<path d="'+path+'" fill="none" stroke="#0e7490" stroke-width="2"/>';
+  for(var j=0;j<pts.length;j++)s+='<circle cx="'+pts[j][0].toFixed(1)+'" cy="'+pts[j][1].toFixed(1)+'" r="3" fill="#0e7490"/>';
+  s+='</svg>';
+  return '<div class="spark">'+s+'</div>';
+}
+var _editTdmId=null;
+function openTdmForm(preMed,editId){
+  _editTdmId=editId||null;
+  var p=getPatient(state.pid);
+  var rec=editId?null:null;
+  if(editId){for(var z=0;z<p.tdm.length;z++)if(p.tdm[z].id===editId){rec=p.tdm[z];break}}
+  var medNames=[];
+  for(var i=0;i<p.meds.length;i++)medNames.push(p.meds[i].name);
+  for(var c=0;c<DRUG_LIB.length;c++)for(var d=0;d<DRUG_LIB[c].drugs.length;d++){var n=DRUG_LIB[c].drugs[d].n;if(DRUG_LIB[c].drugs[d].tdm&&medNames.indexOf(n)<0)medNames.push(n)}
+  if(!medNames.length)medNames=["碳酸锂","丙戊酸钠","卡马西平","氯氮平"];
+  var initMed=rec?rec.med:(preMed||medNames[0]);
+  var initDate=rec?rec.date:today();
+  var initValue=rec?rec.value:"";
+  var initUnit=rec?rec.u:(findDrug(initMed)&&findDrug(initMed).tdm?findDrug(initMed).tdm.u:TDM_UNITS[0]);
+  var initNote=rec?rec.note:"";
+  var h='<div class="sheet-hd"><div class="t">'+(rec?'编辑':'添加')+'血药浓度</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">'+
+  '<div class="field"><label>药物</label><select id="td-med">'+medNames.map(function(n){return '<option'+(n===initMed?' selected':'')+'>'+esc(n)+'</option>'}).join("")+'</select></div>'+
+  '<div class="frow">'+
+  '<div class="field"><label>检测日期</label><input id="td-date" type="date" value="'+esc(initDate)+'"></div>'+
+  '</div>'+
+  '<div class="frow">'+
+  '<div class="field"><label>结果</label><input id="td-value" type="number" step="any" placeholder="数值" value="'+esc(initValue)+'"></div>'+
+  '<div class="field"><label>单位</label><select id="td-unit">'+TDM_UNITS.map(function(u){return '<option'+(u===initUnit?' selected':'')+'>'+u+'</option>'}).join("")+'</select></div>'+
+  '</div>'+
+  '<div class="field"><label>备注（可选）</label><input id="td-note" placeholder="如 谷浓度 / 服药后12h" value="'+esc(initNote)+'"></div>'+
+  sgBarHtml("💡 常用备注（点一下填入）",getTdmNoteSuggestion(5).map(function(x){
+    return {label:x.val,count:x.count,attrs:{val:x.val}};
+  }),"tdmnote-pick",{slim:true})+
+  '<button class="btn btn-block" data-action="tdm-save">保存</button></div>';
+  openSheet(h);
+  var medSel=$("#td-med"),unitSel=$("#td-unit");
+  function syncUnit(){var lib=findDrug(medSel.value);if(lib&&lib.tdm)unitSel.value=lib.tdm.u}
+  medSel.addEventListener("change",syncUnit);
+  if(!rec)syncUnit();   // 编辑时保留原记录的单位，不随药品库自动覆盖
+}
+function saveTdm(){
+  var p=getPatient(state.pid);
+  var v=$("#td-value").value.trim();
+  if(!v){toast("请填写检测结果");return}
+  var med=$("#td-med").value,date=$("#td-date").value||today(),unit=$("#td-unit").value,note=$("#td-note").value.trim();
+  if(_editTdmId){
+    var rec=null;for(var i=0;i<p.tdm.length;i++)if(p.tdm[i].id===_editTdmId){rec=p.tdm[i];break}
+    if(rec){rec.med=med;rec.date=date;rec.value=v;rec.u=unit;rec.note=note}
+    _editTdmId=null;
+  }else{
+    p.tdm=p.tdm||[];
+    p.tdm.push({id:uid(),med:med,date:date,value:v,u:unit,note:note});
+  }
+  touch(p);closeSheet();state.tab="tdm";render();toast("已保存");
+}
+function delTdm(tid){
+  if(!confirm("删除该条检测记录？"))return;
+  var p=getPatient(state.pid);
+  p.tdm=p.tdm.filter(function(t){return t.id!==tid});
+  touch(p);render();toast("已删除");
+}
+
+/* ---------- 信息页 ---------- */
+function admListHTML(p){
+  var ads=admissionsOf(p);
+  if(!ads.length)return "—";
+  return ads.map(function(a){
+    var dp=getDept(a.orgId,a.deptId);
+    var kind=(a.kind||"入院");
+    return '<span class="adm-kind sm">'+esc(kind)+'</span>'+(dp?esc(dp.name)+' ':'')+
+      '床'+esc(a.bed||"—")+'：'+esc(a.admit||"—")+' 至 '+(a.discharge?esc(a.discharge):"今")+'（'+esc(a.status||"在院")+'）';
+  }).join("<br>");
+}
+function renderInfoTab(p){
+  var org=getOrg(p.orgId),dept=getDept(p.orgId,p.deptId);
+  var h='<div class="card">';
+  h+='<div class="row"><span class="muted" style="width:76px">姓名</span><b>'+esc(p.name)+'</b></div>'+
+  '<div class="row mt8"><span class="muted" style="width:76px">机构</span>'+esc(org?org.name:"—")+'</div>'+
+  '<div class="row mt8"><span class="muted" style="width:76px">科室/病区</span>'+esc(dept?dept.name:"—")+'</div>'+
+  '<div class="row mt8"><span class="muted" style="width:76px">管理类型</span>'+(getCareType(p)==="outpatient"?'门诊':'住院')+'</div>'+
+  (p.admissions&&p.admissions.length?'<div class="row mt8" style="align-items:flex-start"><span class="muted" style="width:76px">住院轨迹</span><span>'+admListHTML(p)+'</span></div>':'')+
+  '<div class="row mt8"><span class="muted" style="width:76px">病案号</span>'+esc(p.recordNo||"—")+'</div>'+
+  '<div class="row mt8"><span class="muted" style="width:76px">性别/年龄</span>'+esc(p.gender||"—")+' / '+(p.age?esc(p.age)+"岁":"—")+'</div>'+
+  '<div class="row mt8" style="align-items:flex-start"><span class="muted" style="width:76px">诊断</span><span>'+esc((p.diagnoses||[]).join("、")||"—")+'</span></div>'+
+  '</div>';
+  h+='<div class="card"><div class="sect-t">当前用药（'+(p.meds?p.meds.length:0)+'种）</div>';
+  if(p.meds&&p.meds.length){
+    for(var i=0;i<p.meds.length;i++){
+      var m=p.meds[i];
+      var latest=latestDose(p,m.id);
+      h+='<div class="tdm-rec"><span class="grow">'+esc(m.name)+' <span class="muted">'+esc(m.freq||"")+(m.route?' · '+esc(m.route):'')+'</span></span>'+(latest?'<span class="badge badge-na">'+esc(latest)+'</span>':'')+'</div>';
+    }
+  }else h+='<div class="muted">暂无</div>';
+  h+='</div>';
+  h+='<div style="padding:0 14px"><button class="btn btn-ghost btn-block" data-action="edit-patient" data-pid="'+p.id+'">编辑病人信息</button></div>';
+  return h;
+}
+function latestDose(p,mid){
+  for(var r=p.rows.length-1;r>=0;r--){
+    var c=p.rows[r].cells?p.rows[r].cells[mid]:null;
+    if(c){var parts=[];if(c.m)parts.push("早"+c.m);if(c.n)parts.push("中"+c.n);if(c.e)parts.push("晚"+c.e);if(parts.length)return md(p.rows[r].date)+" "+parts.join(" ")}
+  }
+  return "";
+}
+
+/* ---------- 数据管理 ---------- */
+function openDataSheet(){
+  var h='<div class="sheet-hd"><div class="t">数据管理</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">'+
+  '<div class="field"><label>医院/科室名称（显示在首页和打印单上）</label><div class="row"><input id="dm-hosp" value="'+esc(store.data.hospital||"")+'" style="flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:16px"><button class="btn btn-sm" data-action="hosp-save">保存</button></div></div>'+
+  '<button class="menu-item" data-action="export-json"><span class="ic">⇩</span>导出全部数据（JSON 备份）</button>'+
+  '<button class="menu-item" data-action="import-json"><span class="ic">⇧</span>导入数据（从备份恢复）</button>'+
+  '<input type="file" id="import-file" accept=".json,application/json" style="display:none">'+
+  '<div class="divider"></div>'+
+  '<button class="menu-item" data-action="gen-sync"><span class="ic">▦</span>生成同步二维码（手机扫码同步）</button>'+
+  '<button class="menu-item" data-action="sync-paste"><span class="ic">⧉</span>粘贴同步码导入</button>'+
+  '<button class="menu-item" data-action="load-demo"><span class="ic">＋</span>载入示例病人（体验用）</button>'+
+  '<button class="menu-item" data-action="drug-lib-mgr"><span class="ic">⚙</span>管理药品库（增删自定义药名）</button>'+
+  '<button class="menu-item" data-action="ocr-open"><span class="ic">⚙</span>识别设置（拍照识别 API）</button>'+
+  '<div class="divider"></div>'+
+  '<button class="menu-item" data-action="acct-switch"><span class="ic">👤</span>切换账号（当前：'+esc(curAcctName()||"")+'）</button>'+
+  '<button class="menu-item" data-action="acct-manage"><span class="ic">⚙</span>账号管理（改名 / 密码 / 删除）</button>'+
+  '<div class="muted mt12">数据仅保存在本设备浏览器中，且按账号隔离。跨设备同步请用「生成同步二维码」扫码，数据不经服务器；或定期「导出全部数据」备份。</div>'+
+  '</div>';
+  openSheet(h);
+  var fi=$("#import-file");
+  fi.addEventListener("change",function(){importJSON(this.files[0])});
+}
+function openDrugLibMgr(){
+  var user=[];
+  for(var i=0;i<DRUG_LIB.length;i++)for(var j=0;j<DRUG_LIB[i].drugs.length;j++)if(DRUG_LIB[i].drugs[j]._user)user.push(DRUG_LIB[i].drugs[j].n);
+  var h='<div class="sheet-hd"><div class="t">管理药品库</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">'+
+  '<div class="muted mb8">内置药品库不可修改；下方为你在「添加药物 → 自定义」时新增的药品名，可删除（删除仅从药品库列表移除，不影响已录入的服药单）。</div>';
+  if(user.length){
+    h+='<div class="sect-t">我的自定义药品（'+user.length+'）</div>';
+    for(var k=0;k<user.length;k++)h+='<div class="acct-row"><span class="acct-rowname">'+esc(user[k])+'</span><button class="btn btn-sm btn-danger" data-action="del-user-drug" data-name="'+esc(user[k])+'">删除</button></div>';
+  }else{
+    h+='<div class="empty">还没有自定义药品。添加药物时输入库中没有的药名，会自动加入这里。</div>';
+  }
+  h+='</div>';
+  openSheet(h);
+}
+function exportJSON(){
+  var blob=new Blob([JSON.stringify(store.data,null,2)],{type:"application/json"});
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="精神药物服药单备份_"+today()+".json";
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);
+  toast("已导出备份文件");
+}
+function importJSON(file){
+  if(!file)return;
+  var rd=new FileReader();
+  rd.onload=function(){
+    try{
+      var d=JSON.parse(rd.result);
+      if(!d||!d.patients)throw new Error("bad");
+      if(!confirm("导入将覆盖当前全部数据，确定继续？建议先导出备份。"))return;
+      store.data=d;store.save();closeSheet();state.view="home";state.pid=null;render();toast("导入成功");
+    }catch(e){alert("文件格式不正确，导入失败")}
+  };
+  rd.readAsText(file);
+}
+/* ---------- 二维码同步（设备间直传，不经服务器） ---------- */
+function syncBaseURL(){
+  if(location.protocol==="http:"||location.protocol==="https:")return location.origin+location.pathname;
+  return "";
+}
+function syncCompress(){return LZString.compressToEncodedURIComponent(JSON.stringify(store.data))}
+function syncDecompress(s){
+  try{
+    var json=LZString.decompressFromEncodedURIComponent(s);
+    if(!json)return null;
+    var d=JSON.parse(json);
+    if(!d||!d.patients)return null;
+    return d;
+  }catch(e){return null}
+}
+function openSyncGen(){
+  var compressed=syncCompress();
+  var url=syncBaseURL();
+  var payload=url?url+"#sync="+compressed:compressed;
+  var h='<div class="sheet-hd"><div class="t">生成同步二维码</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">';
+  h+='<div class="sync-note">用<b>手机系统相机</b>扫下方二维码，点屏幕顶部出现的横幅即可自动打开本应用并导入。数据不经过任何服务器。</div>';
+  var qrOK=false,errMsg="";
+  if(url){
+    try{
+      var qr=qrcode(0,"L");
+      qr.addData(payload);
+      qr.make();
+      h+='<div class="qr-box">'+qr.createSvgTag(4,8)+'</div>';
+      qrOK=true;
+    }catch(e){errMsg=e&&e.message?e.message:"容量超限"}
+  }else{
+    errMsg="当前为本地文件打开，无法生成可扫码链接，请用下方「复制同步文本」+ 手机「粘贴同步码」方式。";
+  }
+  if(!qrOK){
+    h+='<div class="sync-warn">二维码生成失败（'+(errMsg||"数据过大")+'）。当前数据量较大时二维码容量有限，请改用「导出全部数据」文件方式同步。</div>';
+  }
+  h+='<div class="row mt12"><button class="btn btn-sm" data-action="copy-sync-link">复制同步链接</button>'+(qrOK?'<button class="btn btn-sm btn-ghost" data-action="copy-sync-text">复制同步文本</button>':'')+'</div>';
+  h+='<input id="sync-payload" type="hidden" value="'+esc(payload)+'">';
+  if(!qrOK){
+    h+='<div class="field mt12"><label>同步文本（数据过大时复制，到手机「粘贴同步码」导入）</label><textarea id="sync-text" readonly style="width:100%;height:90px;font-size:11px;font-family:monospace">'+esc(compressed)+'</textarea></div>';
+  }
+  h+='<div class="muted mt12">若扫码后未自动跳转，可复制链接/文本，在手机上用「粘贴同步码导入」。</div>';
+  h+='</div>';
+  openSheet(h);
+}
+function copyText(txt){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){toast("已复制")},function(){fallbackCopy(txt)});
+  }else fallbackCopy(txt);
+}
+function fallbackCopy(txt){
+  var ta=document.createElement("textarea");ta.value=txt;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();
+  try{document.execCommand("copy");toast("已复制")}catch(e){toast("复制失败，请手动选择")}
+  document.body.removeChild(ta);
+}
+function openSyncPaste(){
+  var h='<div class="sheet-hd"><div class="t">粘贴同步码导入</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">';
+  h+='<div class="sync-note">把 Mac 上「生成同步二维码」里复制的<b>链接</b>或<b>同步文本</b>粘贴到下面，点击导入。导入将覆盖当前数据。</div>';
+  h+='<textarea id="paste-sync" placeholder="粘贴同步链接或同步文本…" style="width:100%;height:150px;padding:10px;border:1px solid var(--line);border-radius:9px;font-size:13px;font-family:monospace"></textarea>';
+  h+='<div class="mt12"><button class="btn btn-block" data-action="paste-sync-do">导入</button></div>';
+  h+='</div>';
+  openSheet(h);
+}
+function doPasteSync(){
+  var v=$("#paste-sync").value.trim();
+  if(!v){toast("请先粘贴同步码");return}
+  var m=v.match(/#sync=([^&\s]+)/);
+  var code=m?m[1]:v;
+  var d=syncDecompress(code);
+  if(!d){alert("同步码无效或已损坏");return}
+  if(!confirm("导入将覆盖当前全部数据，确定继续？"))return;
+  store.data=d;store.save();closeSheet();state.view="home";state.pid=null;render();toast("同步导入成功");
+}
+function tryHashSync(){
+  var h=location.hash||"";
+  var m=h.match(/#sync=([^&\s]+)/);
+  if(!m)return;
+  if(history.replaceState)history.replaceState(null,"",location.pathname);else location.hash="";
+  var d=syncDecompress(m[1]);
+  if(!d){toast("同步数据无效");return}
+  if(store.data.patients&&store.data.patients.length){
+    if(!confirm("检测到来自其他设备的同步数据，导入将覆盖当前全部数据，是否继续？"))return;
+  }
+  store.data=d;store.save();toast("已从二维码同步导入");
+}
+function loadDemo(){
+  var demo={
+    id:uid(),name:"石连香（示例）",recordNo:"2025150",gender:"女",age:"83",
+    admissions:[
+      {id:uid(),bed:"3062",admit:"2025-05-09",status:"在院",discharge:""},
+      {id:uid(),bed:"3035",admit:"2025-07-20",status:"出院",discharge:"2025-07-28"}
+    ],
+    diagnoses:["谵妄","阿尔茨海默病所致神经认知障碍"],
+    meds:[
+      {id:uid(),name:"利培酮",freq:"qn 每晚一次",route:"口服",doses:findDrug("利培酮").d.slice()},
+      {id:uid(),name:"喹硫平",freq:"bid 每日两次",route:"口服",doses:findDrug("喹硫平").d.slice()},
+      {id:uid(),name:"艾司唑仑",freq:"qn 每晚一次",route:"口服",doses:findDrug("艾司唑仑").d.slice()}
+    ],
+    rows:[],tdm:[],createdAt:Date.now()
+  };
+  var m1=demo.meds[0].id,m2=demo.meds[1].id,m3=demo.meds[2].id;
+  function row(d,c){var r={id:uid(),date:d,cells:{}};for(var k in c){r.cells[k]={m:c[k][0]||"",n:c[k][1]||"",e:c[k][2]||""}}return r}
+  demo.rows=[
+    row("2025-05-30",cellObj(m1,["","","1mg"],m2,["","","25mg"],m3,["","","1mg"])),
+    row("2025-06-04",cellObj(m1,["","","1.5mg"])),
+    row("2025-06-16",cellObj(m1,["","","2mg"],m2,["","","50mg"])),
+    row("2025-06-21",cellObj(m2,["","","100mg"])),
+    row("2025-07-02",cellObj(m2,["","","150mg"],m3,["","","1mg"])),
+    row("2025-07-11",cellObj(m2,["50mg","","150mg"],m3,["","","停"]))
+  ];
+  demo.tdm=[
+    {id:uid(),med:"喹硫平",date:"2025-07-15",value:"320",u:"ng/mL",note:"谷浓度"},
+    {id:uid(),med:"喹硫平",date:"2025-07-25",value:"520",u:"ng/mL",note:"复查"}
+  ];
+  var dOrg=ensureOrg("嘉誉护理院");
+  var dDept=ensureDept(dOrg,"老年精神科","inpatient");
+  demo.orgId=dOrg.id;demo.deptId=dDept.id;
+  demo.updatedAt=Date.now();
+  store.data.patients.push(demo);
+  /* 门诊示例病人：门诊科室无床位 / 入院记录 */
+  var dDept2=ensureDept(dOrg,"精神科门诊","outpatient");
+  var demo2={
+    id:uid(),name:"周敏（示例）",recordNo:"2026037",gender:"女",age:"36",
+    admissions:[],careType:"outpatient",
+    diagnoses:["抑郁障碍","失眠障碍"],
+    meds:[
+      {id:uid(),name:"舍曲林",freq:"qd 每日一次",route:"口服",doses:findDrug("舍曲林").d.slice()},
+      {id:uid(),name:"右佐匹克隆",freq:"qn 每晚一次",route:"口服",doses:findDrug("右佐匹克隆").d.slice()}
+    ],
+    rows:[],tdm:[],createdAt:Date.now()
+  };
+  var m1b=demo2.meds[0].id,m2b=demo2.meds[1].id;
+  demo2.rows=[
+    row("2026-03-05",cellObj(m1b,["50mg","50mg","50mg"],m2b,["","","1mg"])),
+    row("2026-03-20",cellObj(m1b,["100mg","100mg","100mg"],m2b,["","","2mg"]))
+  ];
+  demo2.tdm=[{id:uid(),med:"舍曲林",date:"2026-03-20",value:"95",u:"ng/mL",note:"谷浓度"}];
+  demo2.orgId=dOrg.id;demo2.deptId=dDept2.id;
+  demo2.updatedAt=Date.now();
+  store.data.patients.push(demo2);
+  store.save();closeSheet();render();toast("已载入示例病人");
+}
+function cellObj(){
+  var o={};
+  for(var i=0;i<arguments.length;i+=2){o[arguments[i]]=arguments[i+1]}
+  return o;
+}
+
+/* ---------- 打印 ---------- */
+function printGrid(){
+  var p=getPatient(state.pid);if(!p)return;
+  var tl=buildTimeline(p);
+  var org=getOrg(p.orgId),dept=getDept(p.orgId,p.deptId);
+  var h='<h2>'+esc(store.data.hospital||"")+' 精神药物服药单</h2>';
+  var headLine='姓名：<u>'+esc(p.name)+'</u>　性别：<u>'+esc(p.gender||"")+'</u>　年龄：<u>'+esc(p.age||"")+'</u>'+
+    '　病案号：<u>'+esc(p.recordNo||"")+'</u>'+(org?'　机构：<u>'+esc(org.name)+'</u>':'')+(dept?'　科室：<u>'+esc(dept.name)+'</u>':'')+
+    '　诊断：<u>'+esc((p.diagnoses||[]).join("、"))+'</u>';
+  h+='<div class="pi">'+headLine+'</div>';
+  if(getCareType(p)==="outpatient"){
+    h+='<div class="pi" style="margin-top:2px">管理类型：门诊</div>';
+  }else if(p.admissions&&p.admissions.length){
+    h+='<div class="pi" style="margin-top:2px">入院记录：'+p.admissions.map(function(a){return '床'+esc(a.bed||"—")+' '+esc(a.admit||"")+'—'+(a.discharge?esc(a.discharge):"在院")+'('+esc(a.status||"在院")+')'}).join('；')+'</div>';
+  }
+  h+='<table><thead><tr><th style="width:56px">日期</th><th style="width:28px">时间</th>';
+  var pmeds=p.meds.filter(function(m){return !m.hidden});
+  for(var i=0;i<pmeds.length;i++){
+    var pm=pmeds[i];
+    h+='<th><div class="dc">'+esc(pm.name)+'</div><div style="font-size:9px;font-weight:400">'+esc(medSub(pm))+'</div></th>';
+  }
+  h+='</tr></thead><tbody>';
+  for(var di=0;di<tl.dates.length;di++){
+    var d=tl.dates[di];
+    var row=tl.rowMap[d]||null;
+    var tdmOnDate=tl.tdmMap[d]||null;
+    var subRows=tdmOnDate?4:3;
+    for(var s=0;s<3;s++){
+      h+='<tr>';
+      if(s===0)h+='<td rowspan="'+subRows+'">'+esc(d)+'</td>';
+      h+='<td>'+SLOTS[s].t+'</td>';
+      for(var mi=0;mi<pmeds.length;mi++){
+        var med=pmeds[mi];
+        var cell=(row&&row.cells&&row.cells[med.id])?row.cells[med.id][SLOTS[s].k]:"";
+        var tdCls="";
+        if(cell==="停")tdCls=' class="stopc"';
+        else if(!cell&&tl.stopState[med.id][di])tdCls=' class="stopped"';
+        h+='<td'+tdCls+'>'+esc(cell||"")+'</td>';
+      }
+      h+='</tr>';
+    }
+    if(tdmOnDate){
+      h+='<tr><td>血</td>';
+      var seenTdmP={};
+      for(var bi=0;bi<pmeds.length;bi++){
+        var bmed=pmeds[bi];
+        var recs=tdmOnDate[bmed.name];
+        if(recs&&recs.length&&!seenTdmP[bmed.name]){
+          seenTdmP[bmed.name]=true;
+          var cls2=tdmClass(bmed.name,recs);
+          var bc=cls2==="high"?' class="high"':(cls2==="low"?' class="low"':(cls2==="ok"?' class="okc"':""));
+          var vals=recs.map(function(t){return t.value+t.u}).join("；");
+          h+='<td'+bc+'>'+esc(vals)+'</td>';
+        }else h+='<td></td>';
+      }
+      h+='</tr>';
+    }
+  }
+  h+='</tbody></table>';
+  h+='<div class="plegend">注：红底＝停药及停用期间；「血」行为血药浓度：红=偏高，蓝=偏低，绿=正常。</div>';
+  if(p.tdm&&p.tdm.length){
+    h+='<div class="tdm-line"><b>血药浓度监测：</b>';
+    var tdmSorted=p.tdm.slice().sort(function(a,b){return a.date<b.date?-1:1});
+    h+=tdmSorted.map(function(t){return esc(t.med)+" "+esc(t.date)+" "+esc(t.value)+esc(t.u)}).join("；")+'</div>';
+  }
+  $("#print-root").innerHTML=h;
+  window.print();
+}
+
+/* ==================== 事件委托 ==================== */
+document.addEventListener("click",function(e){
+  var t=e.target.closest("[data-action]");
+  if(!t){
+    if(e.target.id==="overlay")closeSheet();
+    return;
+  }
+  var act=t.getAttribute("data-action");
+  switch(act){
+    case "sheet-close":closeSheet();break;
+    case "nav-home":state.view="home";state.pid=null;render();break;
+    case "add-patient":openPatientForm(null);break;
+    case "add-patient-dept":openPatientForm(null,{orgName:t.getAttribute("data-org"),deptName:t.getAttribute("data-dept")});break;
+    case "toggle-org":
+      var oid=t.getAttribute("data-oid");
+      state.collapsed["org:"+oid]=!state.collapsed["org:"+oid];
+      renderPatientList();
+      break;
+    case "toggle-dept":
+      var doid=t.getAttribute("data-oid"),ddid=t.getAttribute("data-did");
+      state.collapsed["dept:"+doid+":"+ddid]=!state.collapsed["dept:"+doid+":"+ddid];
+      renderPatientList();
+      break;
+    case "edit-patient":openPatientForm(t.getAttribute("data-pid"));break;
+    case "open-patient":state.pid=t.getAttribute("data-pid");state.view="patient";state.tab="grid";render();break;
+    case "patient-save":savePatient(t.getAttribute("data-pid")||null);break;
+    case "del-patient":delPatient(t.getAttribute("data-pid"));break;
+    case "tr-open":openTransferSheet(t.getAttribute("data-pid"),t.getAttribute("data-mode"));break;
+    case "tr-mode":state.trMode=t.getAttribute("data-v");refreshTransferSheet(t.getAttribute("data-pid"));break;
+    case "tr-save":saveTransfer(t.getAttribute("data-pid"));break;
+    case "archive-toggle":toggleArchive(t.getAttribute("data-pid"),t.getAttribute("data-v")==="1");break;
+    case "diag-toggle":{
+      t.classList.toggle("on");
+      /* 同一诊断可能同时出现在「常用诊断」与分类树里，状态需同步 */
+      var dOn=t.classList.contains("on"),dName=t.getAttribute("data-name");
+      var dcs=document.querySelectorAll("#pf-diags .chip");
+      for(var dq=0;dq<dcs.length;dq++){
+        if(dcs[dq]===t||dcs[dq].getAttribute("data-name")!==dName)continue;
+        if(dOn)dcs[dq].classList.add("on");else dcs[dq].classList.remove("on");
+      }
+    }break;
+    case "diag-cat-toggle":{var row=t.closest(".diag-cat-row");if(row)row.classList.toggle("collapsed");break;}
+    case "care-type":{
+      var cg=t.parentNode,cc=cg.querySelectorAll(".chip");
+      for(var ci=0;ci<cc.length;ci++)cc[ci].classList.remove("on");
+      t.classList.add("on");updateCareUI();break;
+    }
+    case "dept-type":{
+      var dg=t.parentNode,dc=dg.querySelectorAll(".chip");
+      for(var di2=0;di2<dc.length;di2++)dc[di2].classList.remove("on");
+      t.classList.add("on");updateCareUI();break;
+    }
+    case "diag-add":addCustomDiag(t.closest(".sheet").querySelector("[data-action='patient-save']").getAttribute("data-pid")||null);break;
+    case "tab":state.tab=t.getAttribute("data-tab");render();break;
+    case "add-date":openAddDate();break;
+    case "date-save":saveNewDate();break;
+    case "date-cell":openDateSheet(t.getAttribute("data-rid"));break;
+    case "row-date-save":saveRowDate(t.getAttribute("data-rid"));break;
+    case "row-del":delRow(t.getAttribute("data-rid"));break;
+    case "row-create":
+      var rp=getPatient(state.pid);
+      rp.rows.push({id:uid(),date:t.getAttribute("data-date"),cells:{}});
+      rp.rows.sort(function(a,b){return a.date<b.date?-1:1});
+      touch(rp);closeSheet();render();toast("已添加");
+      break;
+    case "tdm-cell":state.tab="tdm";render();break;
+    case "add-med":openAddMed();break;
+    case "med-pick":openMedConfig(t.getAttribute("data-name"));break;
+    case "med-custom":var cv=$("#am-custom").value.trim();if(cv)openMedConfig(cv);break;
+    case "med-confirm":confirmAddMed(t.getAttribute("data-name"));break;
+    case "med-combo-pick":{
+      var form=t.getAttribute("data-form")||"";
+      var strength=t.getAttribute("data-strength")||"";
+      var freq=t.getAttribute("data-freq")||"";
+      var route=t.getAttribute("data-route")||"";
+      /* 新增（mc-）与编辑（mh-）两套表单都要支持 */
+      var pf=medFld("form"),ps=medFld("strength");
+      if(pf)pf.value=form;
+      if(ps)ps.value=strength;
+      if(freq){var sel=medFld("freq");if(sel)sel.value=freq;}
+      if(route){var sel2=medFld("route");if(sel2)sel2.value=route;}
+      toast("已采纳常用组合");
+    }break;
+    case "med-field-pick":{
+      var key=t.getAttribute("data-key"),val=t.getAttribute("data-val")||"";
+      var fld=medFld(key);if(fld)fld.value=val;
+    }break;
+    case "orgdept-pick":{
+      var oname=t.getAttribute("data-org")||"",dname=t.getAttribute("data-dept")||"";
+      var oS=$("#pf-org"),dS=$("#pf-dept"),oN=$("#pf-org-new"),dN=$("#pf-dept-new");
+      if(oS){oS.value=oname;if(oN){oN.style.display="none";oN.value=""}}
+      fillDepts(oname);
+      if(dS){dS.value=dname;if(dN){dN.style.display="none";dN.value=""}}
+      var dt=$("#pf-dept-type");if(dt)dt.style.display="none";
+      updateCareUI();
+      var sib=t.parentNode.querySelectorAll(".med-sg-combo");
+      for(var si=0;si<sib.length;si++)sib[si].classList.remove("on");
+      t.classList.add("on");
+    }break;
+    case "drug-lib-mgr":openDrugLibMgr();break;
+    case "del-user-drug":{
+      var dn=t.getAttribute("data-name");
+      if(!confirm("从药品库删除「"+dn+"」？已录入服药单中的该药不受影响。"))break;
+      delUserDrug(dn);closeSheet();openDrugLibMgr();toast("已删除");
+      break;
+    }
+    case "med-head":openMedSheet(t.getAttribute("data-mid"));break;
+    case "med-save":saveMedSheet(t.getAttribute("data-mid"));break;
+    case "med-move":moveMed(t.getAttribute("data-mid"),t.getAttribute("data-dir"));break;
+    case "med-del":delMed(t.getAttribute("data-mid"));break;
+    case "med-goto-tdm":openTdmForm(t.getAttribute("data-name"));break;
+    case "med-toggle-hide":toggleMedHide(t.getAttribute("data-mid"));break;
+    case "cell":openCellSheet(t.getAttribute("data-rid"),t.getAttribute("data-mid"),t.getAttribute("data-slot"));break;
+    case "chip-dose":setCell(t.getAttribute("data-val"));break;
+    case "cell-custom-save":var v=$("#cell-custom").value.trim();setCell(v);break;
+    case "add-tdm":openTdmForm(null);break;
+    case "tdm-edit":openTdmForm(null,t.getAttribute("data-tid"));break;
+    case "tdm-save":saveTdm();break;
+    case "tdmnote-pick":{var tn=$("#td-note");if(tn)tn.value=t.getAttribute("data-val")||"";}break;
+    case "tdm-del":delTdm(t.getAttribute("data-tid"));break;
+    case "data-menu":openDataSheet();break;
+    case "hosp-save":store.data.hospital=$("#dm-hosp").value.trim();store.save();toast("已保存");openDataSheet();break;
+    case "export-json":exportJSON();break;
+    case "import-json":$("#import-file").click();break;
+    case "gen-sync":openSyncGen();break;
+    case "sync-paste":openSyncPaste();break;
+    case "paste-sync-do":doPasteSync();break;
+    case "copy-sync-link":copyText($("#sync-payload").value);break;
+    case "copy-sync-text":copyText($("#sync-text").value);break;
+    case "load-demo":loadDemo();break;
+    case "print-grid":printGrid();break;
+    case "adm-add":{
+      var al=$("#adm-list");
+      if(al){var c=al.querySelectorAll(".adm-row").length;al.insertAdjacentHTML("beforeend",admRowHTML({id:uid(),bed:"",admit:today(),status:"在院",discharge:"",kind:c?"换床":"入院"},c))}
+      break;
+    }
+    case "adm-del":{
+      var ar=t.closest(".adm-row");
+      if(ar&&ar.parentNode)ar.parentNode.removeChild(ar);
+      break;
+    }
+    /* ---------- 多账号 ---------- */
+    case "acct-enter":{
+      var eid=t.getAttribute("data-id");var ea=accounts.get(eid);
+      if(!ea)break;
+      if(ea.pin)openPinSheet(eid);else enterAccount(eid,true);
+      break;
+    }
+    case "acct-new":openNewAccount();break;
+    case "acct-create":{
+      var nm=$("#acct-name").value.trim();
+      if(!nm){toast("请填写账号名称");break;}
+      accounts.add(nm,$("#acct-pin").value);
+      closeSheet();
+      store.load();
+      store.save();
+      state.view="home";state.pid=null;render();
+      tryHashSync();
+      toast("已创建账号："+nm);
+      break;
+    }
+    case "pin-enter":{
+      var pid=t.getAttribute("data-id");var pa=accounts.get(pid);
+      var pv=$("#pin-input")?$("#pin-input").value:"";
+      if(!pa)break;
+      if(pa.pin&&pv!==pa.pin){var pe=$("#pin-err");if(pe)pe.textContent="密码错误，请重试";break;}
+      enterAccount(pid,true);
+      break;
+    }
+    case "acct-switch":closeSheet();renderAccountScreen();break;
+    case "acct-manage":openAccountManage();break;
+    case "acct-rename":{
+      var rid=t.getAttribute("data-id");var ra=accounts.get(rid);
+      if(!ra)break;
+      var rnm=prompt("修改账号名称",ra.name);
+      if(rnm&&rnm.trim()){ra.name=rnm.trim();accounts.save();openAccountManage();toast("已改名")}
+      break;
+    }
+    case "acct-setpin":openSetPinSheet(t.getAttribute("data-id"));break;
+    case "sp-save":{
+      var sid=t.getAttribute("data-id");var sv=$("#sp-pin")?$("#sp-pin").value:"";
+      accounts.setPin(sid,sv);openAccountManage();toast(sv?"已设置密码":"已取消密码");
+      break;
+    }
+    case "acct-del":{
+      var did=t.getAttribute("data-id");var da=accounts.get(did);
+      if(!da)break;
+      if(!confirm("删除账号「"+da.name+"」将永久清除其全部病人数据，确定？"))break;
+      var wasCur=(accounts.current===did);
+      accounts.del(did);
+      closeSheet();
+      if(wasCur||!accounts.current)renderAccountScreen();
+      else{openAccountManage();toast("已删除")}
+      break;
+    }
+    case "ocr-open":openOcrSheet();break;
+    case "ocr-save":{
+      var oc={provider:($("#ocr-provider")?$("#ocr-provider").value:""),baseUrl:($("#ocr-baseurl")?$("#ocr-baseurl").value:"").trim(),model:($("#ocr-model")?$("#ocr-model").value:"").trim(),apiKey:($("#ocr-key")?$("#ocr-key").value:"").trim()};
+      setOcrCfg(oc);toast("已保存识别设置");openOcrSheet();
+      break;
+    }
+    case "ocr-grid":openOcrPicker("grid");break;
+    case "ocr-cap":pickOcrPhoto(true);break;
+    case "ocr-pick":pickOcrPhoto(false);break;
+    case "ocr-grid-apply":applyOcrGrid(state.ocrGrid);break;
+    case "ocr-med-rm":{var ri=parseInt(t.getAttribute("data-i"));if(state.ocrGrid&&state.ocrGrid.meds)state.ocrGrid.meds.splice(ri,1);renderOcrGridReview(state.ocrGrid);break;}
+    case "scale-new":openScaleList();break;
+    case "scale-pick":openScaleSheet(t.getAttribute("data-scale"));break;
+    case "scale-save":saveScale(t.getAttribute("data-scale"));break;
+    case "scale-open":openScaleDetail(t.getAttribute("data-aid"));break;
+    case "scale-print":printScale(t.getAttribute("data-aid"));break;
+    case "scale-del":delScale(t.getAttribute("data-aid"));break;
+    case "scale-edit":openScaleEdit(t.getAttribute("data-aid"));break;
+    case "ocr-scale":openOcrPicker("scale",t.getAttribute("data-scale"));break;
+    case "ocr-scale-retry":openOcrPicker("scale",state.ocrScale);break;
+  }
+});
+/* 入院记录状态切换时显隐「出院/结束日期」 */
+document.addEventListener("change",function(e){
+  var t=e.target;
+  if(t.classList&&t.classList.contains("adm-status")){
+    var row=t.closest(".adm-row");
+    if(row){var dis=row.querySelector(".adm-discharge");if(dis)dis.style.display=(t.value==="在院"?"none":"block")}
+  }
+});
+
+/* ====== 心理测评量表模板库 ====== */
+var SCALES=[
+ {id:"mmse",name:"MMSE 简易智能状态检查",cat:"认知功能",items:30,max:30,
+  cutoffs:[{max:9,level:"重度",color:"red",text:"重度认知障碍"},{max:20,level:"中度",color:"orange",text:"中度认知障碍"},{max:26,level:"轻度",color:"amber",text:"轻度认知障碍（受受教育年限影响，文盲≤17、小学≤20、中学≤24 为痴呆界值）"},{max:30,level:"正常",color:"green",text:"基本正常"}],
+  note:"受文化/教育年限影响大，需结合受教育程度判读。"},
+ {id:"moca",name:"MoCA 蒙特利尔认知评估",cat:"认知功能",items:30,max:30,
+  cutoffs:[{max:25,level:"异常",color:"orange",text:"认知障碍（<26 为界值，受教育≤12 年加 1 分）"},{max:30,level:"正常",color:"green",text:"正常"}],note:""},
+ {id:"hamd",name:"HAMD 汉密尔顿抑郁量表",cat:"抑郁/焦虑",items:17,max:52,
+  cutoffs:[{max:7,level:"无",color:"green",text:"无抑郁症状"},{max:17,level:"轻度",color:"amber",text:"轻度抑郁"},{max:24,level:"中度",color:"orange",text:"中度抑郁"},{max:52,level:"重度",color:"red",text:"重度抑郁"}],
+  note:"常用 17 项；若用 24 项分界为 8/20/35。分数越高越重。"},
+ {id:"hama",name:"HAMA 汉密尔顿焦虑量表",cat:"抑郁/焦虑",items:14,max:56,
+  cutoffs:[{max:6,level:"无",color:"green",text:"无焦虑"},{max:13,level:"轻度",color:"amber",text:"可能焦虑"},{max:20,level:"中度",color:"orange",text:"明显焦虑"},{max:56,level:"重度",color:"red",text:"严重焦虑"}]},
+ {id:"sds",name:"SDS 抑郁自评量表（标准分）",cat:"抑郁/焦虑",items:20,max:100,
+  cutoffs:[{max:52,level:"正常",color:"green",text:"正常范围"},{max:62,level:"轻度",color:"amber",text:"轻度抑郁"},{max:72,level:"中度",color:"orange",text:"中度抑郁"},{max:100,level:"重度",color:"red",text:"重度抑郁"}],
+  note:"录入/识别请使用「标准分」（原始分×1.25 取整）。"},
+ {id:"sas",name:"SAS 焦虑自评量表（标准分）",cat:"抑郁/焦虑",items:20,max:100,
+  cutoffs:[{max:49,level:"正常",color:"green",text:"正常范围"},{max:59,level:"轻度",color:"amber",text:"轻度焦虑"},{max:69,level:"中度",color:"orange",text:"中度焦虑"},{max:100,level:"重度",color:"red",text:"重度焦虑"}],
+  note:"录入/识别请使用「标准分」（原始分×1.25 取整）。"},
+ {id:"phq9",name:"PHQ-9 患者健康问卷抑郁",cat:"抑郁/焦虑",items:9,max:27,
+  cutoffs:[{max:4,level:"无",color:"green",text:"无抑郁"},{max:9,level:"轻度",color:"amber",text:"轻度"},{max:14,level:"中度",color:"orange",text:"中度（建议治疗）"},{max:19,level:"中重度",color:"orange",text:"中重度"},{max:27,level:"重度",color:"red",text:"重度（≥20 建议精神科）"}]},
+ {id:"gad7",name:"GAD-7 广泛性焦虑量表",cat:"抑郁/焦虑",items:7,max:21,
+  cutoffs:[{max:4,level:"无",color:"green",text:"无焦虑"},{max:9,level:"轻度",color:"amber",text:"轻度"},{max:14,level:"中度",color:"orange",text:"中度"},{max:21,level:"重度",color:"red",text:"重度"}]},
+ {id:"panss",name:"PANSS 阳性和阴性症状量表",cat:"精神症状/睡眠",items:30,max:210,factors:[{key:"p",name:"阳性"},{key:"n",name:"阴性"},{key:"g",name:"一般"}],
+  cutoffs:[{max:58,level:"轻度",color:"amber",text:"轻度（总分 30 起评）"},{max:75,level:"中度",color:"orange",text:"中度"},{max:210,level:"重度",color:"red",text:"重度"}],
+  note:"可补充因子分 P/N/G；分数越高症状越重。"},
+ {id:"psqi",name:"PSQI 匹兹堡睡眠质量指数",cat:"精神症状/睡眠",items:19,max:21,
+  cutoffs:[{max:5,level:"好",color:"green",text:"睡眠质量好"},{max:7,level:"尚可",color:"amber",text:"睡眠质量尚可"},{max:21,level:"差",color:"red",text:"睡眠质量差（>7 为界值）"}]},
+ {id:"ymrs",name:"YMRS 杨氏躁狂评定量表",cat:"精神症状/睡眠",items:11,max:60,
+  cutoffs:[{max:5,level:"无",color:"green",text:"无症状"},{max:12,level:"轻躁狂",color:"amber",text:"轻躁狂"},{max:19,level:"中度",color:"orange",text:"中度躁狂"},{max:60,level:"重度",color:"red",text:"重度躁狂"}]},
+ {id:"mdq",name:"MDQ 情绪障碍问卷（双相筛查）",cat:"双相情感障碍",items:13,max:13,
+  cutoffs:[{max:6,level:"阴性",color:"green",text:"筛查阴性（前13项'是'＜7）"},{max:13,level:"阳性",color:"red",text:"筛查阳性，提示双相可能（需结合发作期功能损害判断）"}],
+  note:"前 13 项每项'是'计 1 分；阳性需同时满足：发作由情绪问题引起、且当时功能明显损害。仅作筛查，确诊需临床访谈。"},
+ {id:"bsds",name:"BSDS 双相谱系诊断量表",cat:"双相情感障碍",items:19,max:19,
+  cutoffs:[{max:8,level:"阴性",color:"green",text:"筛查阴性（总分＜9）"},{max:19,level:"阳性",color:"red",text:"筛查阳性，提示双相谱系障碍可能"}],
+  note:"19 条描述逐条自评符合程度，每条计 1 分（0-19）。总分≥9 为常用界值。"},
+ {id:"hcl32",name:"HCL-32 轻躁狂症状清单",cat:"双相情感障碍",items:32,max:32,
+  cutoffs:[{max:13,level:"阴性",color:"green",text:"筛查阴性（'是'＜14）"},{max:32,level:"阳性",color:"orange",text:"轻躁狂筛查阳性，提示既往轻躁狂/躁狂可能"}],
+  note:"第 1 部分 32 项'是'计数；≥14 为常用界值，多用于双相 II 型筛查。"},
+ {id:"bdrs",name:"BDRS 双相抑郁评定量表",cat:"双相情感障碍",items:20,max:72,
+  cutoffs:[{max:13,level:"无/轻",color:"green",text:"无明显双相抑郁"},{max:27,level:"中度",color:"orange",text:"中度双相抑郁"},{max:72,level:"重度",color:"red",text:"重度双相抑郁"}],
+  note:"含双相抑郁特征条目（睡眠过多、食欲增加、易激惹、动力缺乏等），分数越高越重。"},
+ {id:"fast",name:"FAST 功能评估简表（双相）",cat:"双相情感障碍",items:24,max:24,factors:[{key:"work",name:"工作"},{key:"auto",name:"自理"},{key:"cog",name:"认知"},{key:"econ",name:"经济"},{key:"rel",name:"人际"},{key:"leis",name:"休闲"}],
+  cutoffs:[{max:8,level:"良好",color:"green",text:"功能基本良好"},{max:16,level:"受损",color:"orange",text:"功能受损"},{max:24,level:"严重受损",color:"red",text:"功能严重受损"}],
+  note:"6 个领域，每领域 0-4 分；总分越高功能损害越重。"},
+ {id:"cgibp",name:"CGI-BP 临床总体印象-双相改良版",cat:"双相情感障碍",items:4,max:7,factors:[{key:"manic",name:"躁狂严重度"},{key:"dep",name:"抑郁严重度"},{key:"total",name:"总体严重度"},{key:"improve",name:"改善度"}],
+  interpret:function(r){var f=r.factors||{};var t=f.total;var lvl=(t==null)?"—":(t<=2?"正常/边缘":t<=4?"轻度":t<=6?"中度":"重度");var col=(t==null)?"green":(t<=2?"green":t<=4?"amber":t<=6?"orange":"red");return {level:lvl,color:col,text:"总体严重度(1-7)："+(t!=null?t:"—")+(f.manic!=null?"；躁狂"+f.manic:"")+(f.dep!=null?"；抑郁"+f.dep:"")};}},
+ {id:"brms",name:"BRMS 倍克-拉范森躁狂量表（Bech-Rafaelsen）",cat:"双相情感障碍",items:11,max:44,
+  cutoffs:[{max:5,level:"无",color:"green",text:"无明显躁狂症状"},{max:10,level:"轻躁狂",color:"amber",text:"有躁狂症状（轻躁狂/可疑，≥6）"},{max:19,level:"中度",color:"orange",text:"中度躁狂"},{max:44,level:"重度",color:"red",text:"重度躁狂（≥20）"}],
+  note:"11 个条目，每条 0-4 分，总分 0-44；分数越高躁狂越重。≥6 提示有躁狂症状，≥13 多支持躁狂发作。"},
+ {id:"adl",name:"ADL 日常生活能力量表",cat:"其他常用",items:20,max:100,
+  cutoffs:[{max:40,level:"重度依赖",color:"red",text:"重度依赖"},{max:60,level:"中度依赖",color:"orange",text:"中度依赖"},{max:99,level:"轻度依赖",color:"amber",text:"轻度依赖"},{max:100,level:"自理",color:"green",text:"生活自理"}],
+  note:"分数越低依赖越重（此处按总分越高越好展示）。"},
+ {id:"cdr",name:"CDR 临床痴呆评定量表",cat:"其他常用",items:6,max:3,
+  cutoffs:[{max:0,level:"正常",color:"green",text:"正常"},{max:0.5,level:"可疑",color:"amber",text:"可疑痴呆"},{max:1,level:"轻度",color:"orange",text:"轻度痴呆"},{max:2,level:"中度",color:"red",text:"中度痴呆"},{max:3,level:"重度",color:"red",text:"重度痴呆"}]},
+ {id:"npi",name:"NPI 神经精神科问卷",cat:"其他常用",items:12,max:144,
+  cutoffs:[{max:12,level:"轻",color:"amber",text:"轻度精神行为症状"},{max:48,level:"中",color:"orange",text:"中度"},{max:144,level:"重",color:"red",text:"重度"}],
+  note:"按频率×严重度计分，常关注有无及主要条目。"},
+ {id:"ybocs",name:"Y-BOCS 耶鲁-布朗强迫量表",cat:"强迫及相关障碍",items:10,max:40,factors:[{key:"obs",name:"强迫思维(1-5项)"},{key:"comp",name:"强迫行为(6-10项)"}],
+  cutoffs:[{max:7,level:"无/极轻",color:"green",text:"无明显强迫症状"},{max:15,level:"轻度",color:"amber",text:"轻度强迫"},{max:23,level:"中度",color:"orange",text:"中度强迫"},{max:31,level:"重度",color:"red",text:"重度强迫"},{max:40,level:"极重",color:"red",text:"极重度强迫"}],
+  note:"10 条目，每条 0-4 分，总分 0-40；前 5 项为强迫思维、后 5 项为强迫行为，各 0-20 分。"},
+ {id:"scl90",name:"SCL-90 症状自评量表",cat:"其他常用",items:90,max:450,factors:[{key:"soma",name:"躯体化"},{key:"obs",name:"强迫"},{key:"interp",name:"人际敏感"},{key:"dep",name:"抑郁"},{key:"anx",name:"焦虑"},{key:"hos",name:"敌对"},{key:"phob",name:"恐怖"},{key:"para",name:"偏执"},{key:"psy",name:"精神病性"}],
+  interpret:function(r){
+    var mean=r.mean!=null?r.mean:null;
+    if(mean==null&&r.total!=null){mean=(r.total<=5)?r.total:r.total/90;} /* 兼容旧记录：旧版 total 即总均分 */
+    if(mean==null)return {level:"",color:"",text:""};
+    var lvl,col,txt;
+    if(mean<=1){lvl="正常";col="green";txt="总均分正常"}
+    else if(mean<=2){lvl="轻度";col="amber";txt="轻度（因子分≥2 为阳性）"}
+    else if(mean<=3){lvl="中度";col="orange";txt="中度"}
+    else{lvl="重度";col="red";txt="重度"}
+    return {level:lvl,color:col,text:txt};
+  },
+  note:"量表总分=90 条目之和（范围 0-450，采用 1-5 评分时为 90-450）；总均分=总分÷90。任一因子分≥2 提示该因子阳性。"},
+ {id:"epq",name:"EPQ 艾森克人格问卷（T分）",cat:"其他常用",items:88,max:100,factors:[{key:"E",name:"外向E"},{key:"N",name:"神经质N"},{key:"P",name:"精神质P"},{key:"L",name:"掩饰L"}],
+  interpret:function(r){var f=r.factors||{};var out=[];["E","N","P","L"].forEach(function(k){var v=f[k];if(v==null)return;var hi=(k==="L"?60:61);if(v>=hi)out.push(k+"偏高("+v+")");else if(v<=39)out.push(k+"偏低("+v+")");});return {level:out.length?"特征明显":"居中",color:out.length?"amber":"green",text:out.length?out.join("、"):"各维度居中"};}},
+ {id:"mmpi",name:"MMPI 明尼苏达多项人格测验（T分）",cat:"其他常用",items:399,max:120,factors:[{key:"hyp",name:"疑病Hs"},{key:"dep",name:"抑郁D"},{key:"hy",name:"癔病Hy"},{key:"pd",name:"精神病态Pd"},{key:"mf",name:"男子气/女子气Mf"},{key:"pa",name:"偏执Pa"},{key:"pt",name:"精神衰弱Pt"},{key:"sc",name:"精神分裂Sc"},{key:"ma",name:"轻躁狂Ma"},{key:"si",name:"社会内向Si"}],
+  interpret:function(r){var f=r.factors||{};var hi=[];for(var k in f){if(f[k]>=60)hi.push((scaleName(k))+" "+f[k]);}return {level:hi.length?"有临床意义量表":"基本正常",color:hi.length?"orange":"green",text:hi.length?("T≥60："+hi.join("、")):"各量表 T<60"};}},
+ {id:"16pf",name:"16PF 卡特尔16种人格因素（标准分）",cat:"其他常用",items:187,max:10,factors:[{key:"A",name:"乐群A"},{key:"B",name:"聪慧B"},{key:"C",name:"稳定C"},{key:"E",name:"恃强E"},{key:"F",name:"兴奋F"},{key:"G",name:"有恒G"},{key:"H",name:"敢为H"},{key:"I",name:"敏感I"},{key:"L",name:"怀疑L"},{key:"M",name:"幻想M"},{key:"N",name:"世故N"},{key:"O",name:"忧虑O"},{key:"Q1",name:"实验Q1"},{key:"Q2",name:"独立Q2"},{key:"Q3",name:"自律Q3"},{key:"Q4",name:"紧张Q4"}],
+  interpret:function(r){var f=r.factors||{};var lo=[],hi=[];for(var k in f){var v=f[k];if(v<=3)lo.push(k);else if(v>=8)hi.push(k);}return {level:(lo.length+hi.length)?"有特征":"平均",color:(lo.length+hi.length)?"amber":"green",text:(lo.length?"低分("+lo.join(",")+") ":"")+(hi.length?"高分("+hi.join(",")+") ":"")||"多数因素居中"};}}
+];
+function scaleName(id){var s=scaleById(id);return s?s.name:id}
+function scaleById(id){for(var i=0;i<SCALES.length;i++)if(SCALES[i].id===id)return SCALES[i];return null}
+function scaleFactorName(s,key){if(!s||!s.factors)return key;for(var i=0;i<s.factors.length;i++)if(s.factors[i].key===key)return s.factors[i].name;return key}
+function interpretScale(s,rec){
+  if(!rec)rec={};
+  if(s.interpret)return s.interpret(rec);
+  var t=rec.total==null?-1:rec.total;
+  if(s.cutoffs){
+    for(var i=0;i<s.cutoffs.length;i++){if(t<=s.cutoffs[i].max)return {level:s.cutoffs[i].level,color:s.cutoffs[i].color,text:s.cutoffs[i].text}}
+    var L=s.cutoffs[s.cutoffs.length-1];return {level:L.level,color:L.color,text:L.text};
+  }
+  return {level:"",color:"",text:""};
+}
+var _editScaleId=null; /* 正在编辑的测评记录 id；为空表示新增 */
+
+/* ====== 拍照识别（云端大模型视觉） ====== */
+var OCR_PRESETS=[
+ {id:"openai",name:"OpenAI（GPT-4o 等）",baseUrl:"https://api.openai.com/v1",model:"gpt-4o"},
+ {id:"qwen",name:"通义千问（DashScope 兼容）",baseUrl:"https://dashscope.aliyuncs.com/compatible-mode/v1",model:"qwen-vl-max"},
+ {id:"hunyuan",name:"腾讯混元",baseUrl:"https://api.hunyuan.cloud.tencent.com/v1",model:"hunyuan-vision"},
+ {id:"custom",name:"自定义（兼容 OpenAI 接口）",baseUrl:"",model:""}
+];
+function getOcrCfg(){return store.data.ocr||null}
+function setOcrCfg(cfg){store.data.ocr=cfg;store.save()}
+function robustParseJSON(text){
+  if(!text)return null;
+  var m=text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  var s=m?m[1]:text;
+  var a=s.indexOf("{");var b=s.lastIndexOf("}");
+  if(a>=0&&b>a)s=s.slice(a,b+1);
+  try{return JSON.parse(s)}catch(e){return null}
+}
+function fetchVision(prompt,imgB64,onDone,onErr){
+  var cfg=getOcrCfg();
+  if(!cfg||!cfg.apiKey||!cfg.baseUrl||!cfg.model){onErr&&onErr("尚未配置识别API，请先到「数据管理 → 识别设置」填写 Key 与接口");return}
+  var body={model:cfg.model,messages:[
+    {role:"system",content:"你是精神科临床文书助手，负责把医疗表单图片结构化抽取为JSON。只输出JSON，不要任何解释。"},
+    {role:"user",content:[
+      {type:"text",text:prompt},
+      {type:"image_url",image_url:{url:"data:image/jpeg;base64,"+imgB64}}
+    ]}
+  ],temperature:0.1};
+  fetch(cfg.baseUrl.replace(/\/$/,"")+"/chat/completions",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+cfg.apiKey},
+    body:JSON.stringify(body)
+  }).then(function(r){return r.json()}).then(function(j){
+    if(j.error){onErr&&onErr("识别失败："+(j.error.message||JSON.stringify(j.error)));return}
+    var c=j.choices&&j.choices[0]&&j.choices[0].message;
+    var txt=c&&c.content;
+    if(!txt){onErr&&onErr("识别返回为空，请重试或手动录入");return}
+    var obj=robustParseJSON(txt);
+    if(!obj){onErr&&onErr("识别结果无法解析为JSON，请重试或手动录入");return}
+    onDone(obj);
+  }).catch(function(e){onErr&&onErr("请求失败："+e.message)});
+}
+var GRID_PROMPT="请识别这张精神科纸质服药单。返回JSON：{startDate(YYYY-MM-DD，若只有相对日期如'第1天'请推算为今天起，无法确定则空), patientHint(姓名或床号，可空), meds:[{name(通用名),form(剂型如片剂/针剂/胶囊),strength(规格如1mg),route(用法如口服/肌注),freq(频率如bid/tid), schedule:[{date(YYYY-MM-DD),m(早剂量,可空),n(中剂量,可空),e(晚剂量,可空)}]}], notes(可空)}。schedule 覆盖单子上出现的每一行日期；剂量写原文字如'1mg''1片''停'。只返回JSON。";
+function scalePrompt(s){return "请识别这张《"+s.name+"》心理测评结果单。返回JSON：{date(YYYY-MM-DD), total(总分或标准分), factors:{"+(s.factors?s.factors.map(function(f){return f.key}).join(":"):"")+"}(各维度分数,可空), items:{题号:得分}(可空), note(可空)}。只返回JSON。"}
+/* 相机/相册输入：每次新建 input，避免复用导致部分浏览器（微信/iOS）无法再次唤起相机 */
+function pickOcrPhoto(withCapture){
+  var inp=document.createElement("input");
+  inp.type="file";inp.accept="image/*";inp.style.display="none";
+  if(withCapture)inp.setAttribute("capture","environment");
+  inp.addEventListener("change",onOcrFile);
+  document.body.appendChild(inp);
+  try{inp.click()}catch(e){toast("无法打开相机/相册，请检查浏览器相机权限")}
+  /* 60 秒后自动移除，避免堆积 */
+  setTimeout(function(){if(inp&&inp.parentNode)inp.parentNode.removeChild(inp)},60000);
+}
+function onOcrFile(e){
+  var f=e.target.files&&e.target.files[0];if(!f)return;
+  var rd=new FileReader();
+  rd.onload=function(){
+    var b64=(rd.result.split(",")[1])||"";
+    state.ocrImg=b64;
+    var cfg=getOcrCfg();
+    var ready=cfg&&cfg.apiKey&&cfg.baseUrl&&cfg.model;
+    if(!ready){
+      /* API 未配置：仍把照片显示出来，提示去配置；不阻断拍照动作 */
+      var img="data:image/jpeg;base64,"+b64;
+      var h='<div class="sheet-hd"><div class="t">已选择照片</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">'+
+        '<img src="'+img+'" style="width:100%;border-radius:10px;margin-bottom:10px">'+
+        '<div class="muted mb12" style="color:#c2410c">⚠ 尚未配置识别 API，无法自动抽取药物/量表数据。请到「数据管理 → 识别设置」填写 API Key 后重新拍照。</div>'+
+        '<button class="btn btn-block mb8" data-action="ocr-open">⚙ 前往识别设置</button>'+
+        '<button class="btn btn-ghost btn-block" data-action="sheet-close">关闭</button>'+
+        '</div>';
+      openSheet(h);
+      return;
+    }
+    if(state.ocrKind==="grid")openOcrReviewGrid();
+    else if(state.ocrKind==="scale")openOcrReviewScale(state.ocrScale);
+  };
+  rd.readAsDataURL(f);
+}
+function openOcrPicker(kind,scaleId){
+  /* 不再因 API 未配置而拦截：用户首要意图是拍照/选图，应让相机/相册一定能打开 */
+  state.ocrKind=kind;state.ocrScale=scaleId||null;
+  var cfg=getOcrCfg();
+  var ready=cfg&&cfg.apiKey&&cfg.baseUrl&&cfg.model;
+  var note=ready
+    ?"照片仅用于本次识别，发送到你自己的识别API，不会保存或上传到本应用。"
+    :"照片会暂存在内存中。若已配置 API 将自动识别；未配置时可拍完照片后到「识别设置」填写 Key 再重拍以自动识别。";
+  var h='<div class="sheet-hd"><div class="t">获取照片</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">'+
+    '<div class="muted mb12">'+note+'</div>'+
+    '<button class="btn btn-block mb8" data-action="ocr-cap">📷 拍照</button>'+
+    '<button class="btn btn-block btn-ghost" data-action="ocr-pick">🖼 从相册 / 文件选择</button>'+
+    (ready?'':'<button class="btn btn-block btn-ghost mt8" data-action="ocr-open">⚙ 前往识别设置</button>')+
+    '<div class="muted mt12">若为微信内打开无法调用相机，可点「从相册选择」发送图片；或改用手机系统浏览器打开本应用。</div>'+
+    '</div>';
+  openSheet(h);
+}
+function openOcrReviewGrid(){
+  var img="data:image/jpeg;base64,"+state.ocrImg;
+  var h='<div class="sheet-hd"><div class="t">识别服药单</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">'+
+    '<img src="'+img+'" style="width:100%;border-radius:10px;margin-bottom:10px">'+
+    '<div id="ocr-status" class="muted">正在识别…（照片仅用于本次识别，不会保存）</div></div>';
+  openSheet(h);
+  fetchVision(GRID_PROMPT,state.ocrImg,renderOcrGridReview,function(err){
+    var s=document.getElementById("ocr-status");
+    if(s)s.innerHTML='<span style="color:#c0392b">'+esc(err)+'</span><div class="mt12"><button class="btn btn-sm" data-action="ocr-grid">重试</button></div>';
+  });
+}
+function openOcrReviewScale(scaleId){
+  var s=scaleById(scaleId);if(!s)return;
+  var img="data:image/jpeg;base64,"+state.ocrImg;
+  var h='<div class="sheet-hd"><div class="t">识别 · '+esc(s.name)+'</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">'+
+    '<img src="'+img+'" style="width:100%;border-radius:10px;margin-bottom:10px">'+
+    '<div id="ocr-status" class="muted">正在识别…（照片仅用于本次识别，不会保存）</div></div>';
+  openSheet(h);
+  fetchVision(scalePrompt(s),state.ocrImg,function(obj){renderOcrScaleReview(obj,scaleId)},function(err){
+    var st=document.getElementById("ocr-status");
+    if(st)st.innerHTML='<span style="color:#c0392b">'+esc(err)+'</span><div class="mt12"><button class="btn btn-sm" data-action="ocr-scale-retry">重试</button></div>';
+  });
+}
+/* 识别设置 */
+function openOcrSheet(){
+  var cfg=getOcrCfg()||{provider:"openai",baseUrl:OCR_PRESETS[0].baseUrl,model:OCR_PRESETS[0].model,apiKey:""};
+  var opts=OCR_PRESETS.map(function(p){return '<option value="'+p.id+'"'+(cfg.provider===p.id?' selected':'')+'>'+esc(p.name)+'</option>'}).join("");
+  var h='<div class="sheet-hd"><div class="t">识别设置</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">'+
+  '<div class="muted mb8">拍照识别由你自己的大模型 API 完成：照片只在识别时发送一次，不入数据库、不上传到本应用服务器。需填 API Key（仅存本机当前账号）。</div>'+
+  '<div class="field"><label>服务商预设</label><select id="ocr-provider" data-action="ocr-preset">'+opts+'</select></div>'+
+  '<div class="field"><label>接口地址 Base URL</label><input id="ocr-baseurl" value="'+esc(cfg.baseUrl||"")+'" placeholder="https://..."></div>'+
+  '<div class="field"><label>模型名</label><input id="ocr-model" value="'+esc(cfg.model||"")+'" placeholder="如 gpt-4o"></div>'+
+  '<div class="field"><label>API Key</label><input id="ocr-key" type="password" value="'+esc(cfg.apiKey||"")+'" placeholder="sk-..."></div>'+
+  '<button class="btn btn-block mt12" data-action="ocr-save">保存设置</button>'+
+  '<div class="muted mt12">支持任意兼容 OpenAI 接口的视觉模型（OpenAI / 通义 / 混元 / 本地 Ollama 等）。</div></div>';
+  openSheet(h);
+  var ps=$("#ocr-provider");
+  if(ps)ps.addEventListener("change",function(){
+    var pr=OCR_PRESETS.filter(function(x){return x.id===ps.value})[0];
+    if(pr){var b=$("#ocr-baseurl"),m=$("#ocr-model");if(b)b.value=pr.baseUrl;if(m)m.value=pr.model;}
+  });
+}
+
+/* 服药单 OCR：校对 + 写入 */
+function findMedBySig(p,name,form,strength){
+  for(var i=0;i<p.meds.length;i++){var m=p.meds[i];if(m.name===name&&(m.form||"")===(form||"")&&(m.strength||"")===(strength||""))return m}
+  return null;
+}
+function upsertMed(p,name,form,strength,route,freq){
+  var ex=findMedBySig(p,name,form,strength);
+  if(ex){
+    if(route&&!ex.route)ex.route=route;
+    if(freq&&!ex.freq)ex.freq=freq;
+    return ex;
+  }
+  var lib=findDrug(name);
+  var m={id:uid(),name:name,form:form||"",strength:strength||"",route:route||"",freq:freq||"",doses:lib?lib.d.slice():[]};
+  p.meds.push(m);ensureDrug(name);
+  return m;
+}
+function ensureRowByDate(p,date){
+  for(var i=0;i<p.rows.length;i++)if(p.rows[i].date===date)return p.rows[i];
+  var r={id:uid(),date:date,cells:{}};p.rows.push(r);p.rows.sort(function(a,b){return a.date<b.date?-1:1});return r;
+}
+function renderOcrGridReview(obj){
+  if(!obj||!obj.meds||!obj.meds.length){
+    openSheet('<div class="sheet-hd"><div class="t">识别结果</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd"><div class="muted">未识别到药物，请重试或手动录入。</div><div class="mt12"><button class="btn btn-sm" data-action="ocr-grid">重新拍照</button></div></div>');
+    return;
+  }
+  state.ocrGrid=obj;
+  var p=getPatient(state.pid);
+  var h='<div class="sheet-hd"><div class="t">核对服药单</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">';
+  h+='<div class="muted mb8">将写入病人「'+esc(p.name)+'」的服药单。请核对（可移除误识药物）：</div>';
+  for(var i=0;i<obj.meds.length;i++){
+    var m=obj.meds[i];
+    h+='<div class="ocr-med"><div class="row"><b>'+esc(m.name||"未命名")+'</b>'+(m.strength?' <span class="muted">'+esc(m.strength)+'</span>':'')+(m.form?' <span class="muted">'+esc(m.form)+'</span>':'')+'<button class="btn btn-sm btn-ghost" data-action="ocr-med-rm" data-i="'+i+'">移除</button></div>';
+    h+='<div class="muted" style="font-size:12px">'+esc(m.freq||"")+(m.route?' · '+esc(m.route):'')+'</div>';
+    if(m.schedule&&m.schedule.length){
+      h+='<table class="mini-grid"><tr><th>日期</th><th>早</th><th>中</th><th>晚</th></tr>';
+      for(var d=0;d<m.schedule.length;d++){var s=m.schedule[d];h+='<tr><td>'+esc(s.date||"")+'</td><td>'+esc(s.m||"")+'</td><td>'+esc(s.n||"")+'</td><td>'+esc(s.e||"")+'</td></tr>'}
+      h+='</table>';
+    }
+  }
+  h+='<button class="btn btn-block mt12" data-action="ocr-grid-apply">确认导入服药单</button>';
+  h+='<button class="btn btn-ghost btn-block mt8" data-action="ocr-grid">重新拍照</button></div>';
+  openSheet(h);
+}
+function applyOcrGrid(obj){
+  var p=getPatient(state.pid);if(!p)return;
+  var added=0;
+  for(var i=0;i<obj.meds.length;i++){
+    var m=obj.meds[i];
+    if(!m.name)continue;
+    var med=upsertMed(p,m.name,m.form,m.strength,m.route,m.freq);
+    if(m.schedule)for(var d=0;d<m.schedule.length;d++){
+      var s=m.schedule[d];if(!s.date)continue;
+      var row=ensureRowByDate(p,s.date);
+      if(!row.cells[med.id])row.cells[med.id]={m:"",n:"",e:""};
+      if(s.m!=null&&s.m!=="")row.cells[med.id].m=String(s.m);
+      if(s.n!=null&&s.n!=="")row.cells[med.id].n=String(s.n);
+      if(s.e!=null&&s.e!=="")row.cells[med.id].e=String(s.e);
+    }
+    added++;
+  }
+  touch(p);closeSheet();render();
+  toast("已导入 "+added+" 种药物到服药单");
+}
+
+/* 心理测评模块 */
+function renderScaleTab(p){
+  var h='<div class="toolbar"><button class="btn btn-sm" data-action="scale-new">＋ 新增测评</button></div>';
+  var list=(p.assessments||[]).slice().sort(function(a,b){return a.date<b.date?1:-1});
+  if(!list.length){h+='<div class="empty">暂无测评记录<br><span style="font-size:12px">点击「新增测评」选择量表，可拍照识别录入</span></div>';return h;}
+  for(var i=0;i<list.length;i++){
+    var a=list[i];var s=scaleById(a.scale);var r=interpretScale(s,a);
+    h+='<div class="scale-card" data-action="scale-open" data-aid="'+a.id+'">'+
+      '<div class="row"><b>'+esc(s?s.name:a.scale)+'</b><span class="sc-date">'+esc(a.date||"")+'</span></div>'+
+      '<div class="row mt4"><span class="muted">总分 '+esc(a.total!=null?a.total:"—")+(a.mean!=null?' ｜ 总均分 '+esc(a.mean):'')+'</span>'+(r.level?' <span class="lv lv-'+r.color+'">'+esc(r.level)+'</span>':'')+'</div>'+
+      (r.text?'<div class="muted" style="font-size:12px">'+esc(r.text)+'</div>':'')+'</div>';
+  }
+  return h;
+}
+function openScaleList(){
+  var cats={};for(var i=0;i<SCALES.length;i++){if(!cats[SCALES[i].cat])cats[SCALES[i].cat]=[];cats[SCALES[i].cat].push(SCALES[i]);}
+  var h='<div class="sheet-hd"><div class="t">选择量表</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">';
+  /* 常用量表置顶，免去在 24 个量表里翻找 */
+  h+=sgBarHtml("💡 你常用的量表（按历史录入频次）",getScaleSuggestion(6).map(function(x){
+    return {label:scaleById(x.id).name,count:x.count,attrs:{scale:x.id}};
+  }),"scale-pick",{slim:true});
+  for(var c in cats){
+    h+='<div class="sect-t">'+esc(c)+'</div><div class="scale-pick">';
+    for(var j=0;j<cats[c].length;j++)h+='<button class="chip" data-action="scale-pick" data-scale="'+cats[c][j].id+'">'+esc(cats[c][j].name)+'</button>';
+    h+='</div>';
+  }
+  h+='</div>';openSheet(h);
+}
+function openScaleSheet(scaleId,prefill){
+  prefill=prefill||{};
+  var s=scaleById(scaleId);if(!s)return;
+  var h='<div class="sheet-hd"><div class="t">'+esc(s.name)+'</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">';
+  h+='<div class="muted mb8">可拍照识别自动录入，也可手动填写后保存。</div>';
+  h+='<button class="btn btn-sm btn-ghost" data-action="ocr-scale" data-scale="'+s.id+'">📷 拍照/上传识别</button>';
+  h+='<div class="divider"></div>';
+  h+='<div class="field"><label>测评日期</label><input id="sc-date" type="date" value="'+esc(prefill.date||today())+'"></div>';
+  h+='<div class="field"><label>总分'+(s.id==="sds"||s.id==="sas"?"（标准分）":(s.id==="scl90"?"（量表总分）":""))+'</label><input id="sc-total" inputmode="decimal" value="'+(prefill.total!=null?prefill.total:"")+'"></div>';
+  if(s.id==="scl90")h+='<div class="field"><label>总均分（自动=总分÷90，也可手填）</label><input id="sc-mean" inputmode="decimal" value="'+(prefill.mean!=null?prefill.mean:"")+'"></div>';
+  if(s.factors&&s.factors.length){
+    h+='<div class="sect-t">维度分</div>';
+    for(var i=0;i<s.factors.length;i++){var fk=s.factors[i];var fv=prefill.factors?prefill.factors[fk.key]:"";h+='<div class="field"><label>'+esc(fk.name)+'</label><input id="sc-f-'+fk.key+'" inputmode="decimal" value="'+(fv!=null?fv:"")+'"></div>';}
+  }
+  if(s.note)h+='<div class="muted mt8">'+esc(s.note)+'</div>';
+  h+='<button class="btn btn-block mt12" data-action="scale-save" data-scale="'+s.id+'">保存测评</button></div>';
+  openSheet(h);
+  if(s.id==="scl90"){
+    var te=document.getElementById("sc-total"),me=document.getElementById("sc-mean");
+    if(te&&me)te.addEventListener("input",function(){var v=parseFloat(te.value);me.value=(!isNaN(v)&&te.value!=="")?(v/90).toFixed(2):"";});
+  }
+}
+function saveScale(scaleId){
+  var s=scaleById(scaleId);if(!s)return;
+  var p=getPatient(state.pid);
+  var rec={scale:scaleId,date:($("#sc-date")?$("#sc-date").value:"")||today(),total:parseFloat(($("#sc-total")?$("#sc-total").value:"")||"")||0,factors:{},items:{}};
+  if(s.id==="scl90"){var mv=$("#sc-mean");if(mv&&mv.value!=="")rec.mean=parseFloat(mv.value)||0;}
+  if(s.factors){for(var i=0;i<s.factors.length;i++){var v=$("#sc-f-"+s.factors[i].key);if(v&&v.value!=="")rec.factors[s.factors[i].key]=parseFloat(v.value)||0;}}
+  if(_editScaleId){
+    for(var k=0;k<p.assessments.length;k++){if(p.assessments[k].id===_editScaleId){rec.id=_editScaleId;p.assessments[k]=rec;break;}}
+    _editScaleId=null;touch(p);closeSheet();render();toast("已更新测评");
+  }else{
+    rec.id=uid();p.assessments.push(rec);touch(p);closeSheet();render();toast("已保存测评");
+  }
+}
+function applyOcrScale(scaleId,obj){
+  var s=scaleById(scaleId);if(!s||!obj)return;
+  var p=getPatient(state.pid);
+  var rec={id:uid(),scale:scaleId,date:obj.date||today(),total:obj.total!=null?parseFloat(obj.total)||0:0,factors:obj.factors||{},items:obj.items||{}};
+  p.assessments.push(rec);touch(p);closeSheet();render();
+  toast("已保存 "+s.name+" 测评（可在列表核对/删除）");
+}
+function renderOcrScaleReview(obj,scaleId){applyOcrScale(scaleId,obj);}
+function openScaleDetail(aid){
+  var p=getPatient(state.pid);var a=null;for(var i=0;i<p.assessments.length;i++)if(p.assessments[i].id===aid)a=p.assessments[i];if(!a)return;
+  var s=scaleById(a.scale);var r=interpretScale(s,a);
+  var h='<div class="sheet-hd"><div class="t">'+esc(s?s.name:a.scale)+'</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">';
+  h+='<div class="row"><span class="muted">日期</span><b>'+esc(a.date||"")+'</b></div>';
+  h+='<div class="row mt8"><span class="muted">总分</span><b>'+esc(a.total!=null?a.total:"—")+'</b>'+(r.level?' <span class="lv lv-'+r.color+'">'+esc(r.level)+'</span>':'')+'</div>';
+  if(a.mean!=null)h+='<div class="row mt4"><span class="muted">总均分</span><b>'+esc(a.mean)+'</b></div>';
+  h+='<div class="muted mt8">'+esc(r.text||"")+'</div>';
+  if(a.factors&&Object.keys(a.factors).length){
+    h+='<div class="sect-t">维度分</div>';
+    for(var k in a.factors)h+='<div class="row mt4"><span class="muted">'+esc(scaleFactorName(s,k))+'</span><b>'+esc(a.factors[k])+'</b></div>';
+  }
+  if(a.items&&Object.keys(a.items).length){
+    h+='<div class="sect-t">条目分</div><div class="muted">'+Object.keys(a.items).map(function(k){return k+":"+a.items[k]}).join("  ")+'</div>';
+  }
+  h+='<div class="divider"></div><button class="btn btn-sm" data-action="scale-edit" data-aid="'+a.id+'">编辑</button> <button class="btn btn-sm" data-action="scale-print" data-aid="'+a.id+'">打印此测评单</button> <button class="btn btn-sm btn-danger" data-action="scale-del" data-aid="'+a.id+'">删除</button></div>';
+  openSheet(h);
+}
+function openScaleEdit(aid){
+  var p=getPatient(state.pid);var a=null;for(var i=0;i<p.assessments.length;i++)if(p.assessments[i].id===aid)a=p.assessments[i];if(!a)return;
+  _editScaleId=a.id;
+  openScaleSheet(a.scale,{date:a.date,total:a.total,factors:a.factors||{},mean:a.mean});
+}
+function delScale(aid){
+  var p=getPatient(state.pid);for(var i=0;i<p.assessments.length;i++)if(p.assessments[i].id===aid){p.assessments.splice(i,1);break}
+  touch(p);closeSheet();render();toast("已删除");
+}
+function printScale(aid){
+  var p=getPatient(state.pid);var a=null;for(var i=0;i<p.assessments.length;i++)if(p.assessments[i].id===aid)a=p.assessments[i];if(!a)return;
+  var s=scaleById(a.scale);var r=interpretScale(s,a);
+  var org=getOrg(p.orgId),dept=getDept(p.orgId,p.deptId);
+  var html='<html><head><meta charset="utf-8"><style>body{font-family:-apple-system,"PingFang SC",sans-serif;padding:28px;color:#222}'+
+    'h2{margin:0 0 4px}.sub{color:#666;font-size:13px;margin-bottom:16px}.kv{display:flex;justify-content:space-between;border-bottom:1px dashed #ddd;padding:8px 0}'+
+    '.lv{padding:2px 10px;border-radius:20px;color:#fff;font-size:13px}.lv-red{background:#c0392b}.lv-orange{background:#e67e22}.lv-amber{background:#f39c12}.lv-green{background:#27ae60}'+
+    '.note{margin-top:14px;color:#555;font-size:13px}.tt{margin-top:24px;color:#999;font-size:12px}</style></head><body>'+
+    '<h2>'+esc(s?s.name:a.scale)+'</h2>'+
+    '<div class="sub">'+esc(org?org.name:"")+(dept?" · "+esc(dept.name):"")+' ｜ 病人：'+esc(p.name)+' ｜ 病案号：'+esc(p.recordNo||"")+'</div>'+
+    '<div class="kv"><span>测评日期</span><b>'+esc(a.date||"")+'</b></div>'+
+    '<div class="kv"><span>总分</span><b>'+esc(a.total!=null?a.total:"—")+' '+(r.level?'<span class="lv lv-'+r.color+'">'+esc(r.level)+'</span>':'')+'</b></div>'+
+    (a.mean!=null?'<div class="kv"><span>总均分</span><b>'+esc(a.mean)+'</b></div>':'');
+  if(a.factors)for(var k in a.factors)html+='<div class="kv"><span>'+esc(scaleFactorName(s,k))+'</span><b>'+esc(a.factors[k])+'</b></div>';
+  html+=(r.text?'<div class="note">判读：'+esc(r.text)+'</div>':'')+(s&&s.note?'<div class="note">备注：'+esc(s.note)+'</div>':'');
+  html+='<div class="tt">生成时间：'+new Date().toLocaleString()+'（判读仅供参考，请以临床判断为准）</div>';
+  html+='</body></html>';
+  var w=window.open("","_blank");if(!w){toast("请允许弹出窗口以打印");return}w.document.write(html);w.document.close();setTimeout(function(){w.print()},300);
+}
+
+/* ==================== 启动 ==================== */
+accounts.load();
+migrateOld();
+function loadDemoSilent(){
+  loadDemo();closeSheet();state.view="home";render();
+}
+if(accounts.current&&accounts.get(accounts.current)){
+  store.load();
+  tryHashSync();
+  render();
+}else{
+  renderAccountScreen();
+}
+</script>
+</body>
+</html>
