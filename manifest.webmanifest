@@ -1,0 +1,19 @@
+{
+  "name": "精神科服药单",
+  "short_name": "服药单",
+  "description": "精神科用药与测评记录（数据存于本地浏览器）",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e7490",
+  "theme_color": "#0e7490",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
