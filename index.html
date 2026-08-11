@@ -469,21 +469,50 @@ function mergeDrugLib(saved,def){
   }
   return out;
 }
+
+/* ===== 安全本地存储封装 =====
+   Safari 在「阻止所有 Cookie」或某些隐私设置下访问 localStorage 会直接抛错，
+   导致整页白屏（Chrome 不拦，所以正常）。这里捕获异常并退化为内存存储，
+   保证应用至少能打开；存储不可用时显示一个提示条。 */
+var _memStore={};
+var _lsBlocked=false;
+function lsProbe(){try{var k="__psy_ls_probe__";localStorage.setItem(k,k);localStorage.removeItem(k);_lsBlocked=false}catch(e){_lsBlocked=true}}
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return (k in _memStore)?_memStore[k]:null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}_memStore[k]=v}
+function lsDel(k){try{localStorage.removeItem(k)}catch(e){}delete _memStore[k]}
+function showStorageWarning(){
+  if(document.getElementById("ls-warn"))return;
+  var d=document.createElement("div");
+  d.id="ls-warn";
+  d.style.cssText="position:fixed;top:0;left:0;right:0;z-index:9999;background:#fff4e5;color:#8a4b00;font-size:13px;padding:10px 14px;border-bottom:1px solid #f0c36d;line-height:1.5";
+  d.innerHTML="⚠️ 当前浏览器（Safari）禁用了本地存储，数据将无法保存、刷新后丢失。请在 iPhone「设置 → Safari → 关闭『阻止所有 Cookie』」，或 Mac「Safari → 设置 → 隐私 → 取消『阻止所有 Cookie』」后，完全关闭 Safari 重新打开。";
+  document.body.appendChild(d);
+}
+function showBootError(err){
+  var app=document.getElementById("app");
+  if(!app)return;
+  app.innerHTML='<div style="padding:24px;font-family:-apple-system,sans-serif;color:#333">'+
+    '<h2 style="color:#c0392b">页面加载出错</h2>'+
+    '<p>本应用在该浏览器中遇到了脚本错误，已停止渲染。请把下面这段错误信息发给开发者以便修复：</p>'+
+    '<pre style="white-space:pre-wrap;background:#f6f6f6;padding:12px;border-radius:8px;font-size:12px;overflow:auto">'+esc(String(err&&err.stack||err))+'</pre>'+
+    '<p style="color:#666;font-size:13px">若您使用的是 Safari，请先尝试：设置 → Safari → 关闭「阻止所有 Cookie」后重试。</p></div>';
+}
+
 function loadDrugLib(){
   try{
-    var raw=localStorage.getItem("psyMedSheet.druglib.v1");
+    var raw=lsGet("psyMedSheet.druglib.v1");
     if(raw){
       var a=JSON.parse(raw);
       if(Array.isArray(a)&&a.length){
         var merged=mergeDrugLib(a,DRUG_LIB_DEFAULT);
-        try{localStorage.setItem("psyMedSheet.druglib.v1",JSON.stringify(merged))}catch(e){}
+        lsSet("psyMedSheet.druglib.v1",JSON.stringify(merged));
         return merged;
       }
     }
   }catch(e){}
   return JSON.parse(JSON.stringify(DRUG_LIB_DEFAULT));
 }
-function saveDrugLib(){try{localStorage.setItem("psyMedSheet.druglib.v1",JSON.stringify(DRUG_LIB))}catch(e){}}
+function saveDrugLib(){lsSet("psyMedSheet.druglib.v1",JSON.stringify(DRUG_LIB))}
 /* 把通用名写入用户药品库（仅在库中不存在时），用于持久化自定义药名 */
 function ensureDrug(name){
   if(!name)return;
@@ -863,13 +892,13 @@ var ACC_KEY="psyMedSheet.accounts.v1";
 var accounts={
   list:[], current:null,
   load:function(){
-    try{var raw=localStorage.getItem(ACC_KEY);if(raw){var o=JSON.parse(raw);this.list=o.list||[];this.current=o.current||null}}catch(e){this.list=[];this.current=null}
+    try{var raw=lsGet(ACC_KEY);if(raw){var o=JSON.parse(raw);this.list=o.list||[];this.current=o.current||null}}catch(e){this.list=[];this.current=null}
     if(this.current&&!this.get(this.current))this.current=null;
   },
   get:function(id){for(var i=0;i<this.list.length;i++)if(this.list[i].id===id)return this.list[i];return null},
-  save:function(){try{localStorage.setItem(ACC_KEY,JSON.stringify({list:this.list,current:this.current}))}catch(e){}},
+  save:function(){lsSet(ACC_KEY,JSON.stringify({list:this.list,current:this.current}))},
   add:function(name,pin){var a={id:uid(),name:name,pin:pin||""};this.list.push(a);this.current=a.id;this.save();return a},
-  del:function(id){try{localStorage.removeItem(this.dataKey(id))}catch(e){}this.list=this.list.filter(function(x){return x.id!==id});if(this.current===id)this.current=null;this.save()},
+  del:function(id){lsDel(this.dataKey(id));this.list=this.list.filter(function(x){return x.id!==id});if(this.current===id)this.current=null;this.save()},
   setPin:function(id,pin){var a=this.get(id);if(a){a.pin=pin||"";this.save()}},
   dataKey:function(id){return "psyMedSheet.acct."+id}
 };
@@ -880,7 +909,7 @@ var store={
   data:null,
   load:function(){
     if(!accounts.current){this.data=null;return}
-    var raw=localStorage.getItem(accounts.dataKey(accounts.current));
+    var raw=lsGet(accounts.dataKey(accounts.current));
     this.data=null;
     if(raw){try{this.data=JSON.parse(raw)}catch(e){this.data=null}}
     if(!this.data||!this.data.patients)this.data={hospital:"",patients:[],orgs:[],ocr:null};
@@ -891,7 +920,7 @@ var store={
   save:function(){
     if(!accounts.current||!this.data)return;
     this.data.ts=Date.now();
-    localStorage.setItem(accounts.dataKey(accounts.current),JSON.stringify(this.data));
+    lsSet(accounts.dataKey(accounts.current),JSON.stringify(this.data));
   },
   migrate:function(){
     var ps=this.data.patients||[];
@@ -996,10 +1025,10 @@ function enterAccount(id,doSync){
 function migrateOld(){
   if(accounts.list.length)return;            // 已有账号，跳过迁移
   var old=null;
-  try{var raw=localStorage.getItem(OLD_KEY);if(raw)old=JSON.parse(raw)}catch(e){old=null}
+  try{var raw=lsGet(OLD_KEY);if(raw)old=JSON.parse(raw)}catch(e){old=null}
   if(old&&old.patients){                      // 旧版单账号数据 → 迁移为默认账号
     var a=accounts.add("我的账号","");
-    try{localStorage.setItem(accounts.dataKey(a.id),JSON.stringify(old))}catch(e){}
+    lsSet(accounts.dataKey(a.id),JSON.stringify(old))
     accounts.current=a.id;accounts.save();
   }
   // 全新安装：不预建账号，启动后显示账号选择页，由使用者自行新建账号
@@ -3166,17 +3195,23 @@ function printScale(aid){
 }
 
 /* ==================== 启动 ==================== */
-accounts.load();
-migrateOld();
-function loadDemoSilent(){
-  loadDemo();closeSheet();state.view="home";render();
-}
-if(accounts.current&&accounts.get(accounts.current)){
-  store.load();
-  tryHashSync();
-  render();
-}else{
-  renderAccountScreen();
+lsProbe();
+try{
+  accounts.load();
+  migrateOld();
+  function loadDemoSilent(){
+    loadDemo();closeSheet();state.view="home";render();
+  }
+  if(accounts.current&&accounts.get(accounts.current)){
+    store.load();
+    tryHashSync();
+    render();
+  }else{
+    renderAccountScreen();
+  }
+  if(_lsBlocked)showStorageWarning();
+}catch(err){
+  showBootError(err);
 }
 </script>
 </body>
