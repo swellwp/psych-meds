@@ -7,9 +7,6 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#0e7490">
-<meta name="apple-mobile-web-app-title" content="精神科服药单">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>精神药物服药单</title>
 <style>
 :root{
@@ -95,6 +92,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans G
 .dgrp{display:flex;align-items:center;gap:7px;margin:10px 18px 2px;font-size:12px;color:var(--text-sub);font-weight:500}
 .dgrp:before{content:"";flex:0 0 3px;height:12px;background:var(--primary);border-radius:2px;opacity:.55}
 .dgrp .dgc{background:#e2e8f0;border-radius:8px;padding:0 7px;font-size:10px}
+/* 医嘱近期改动颜色标记（需求：近1周红 / 近2周绿） */
+.pcard{position:relative}
+.pcard.ord-1w{box-shadow:inset 4px 0 0 #ef4444}
+.pcard.ord-2w{box-shadow:inset 4px 0 0 #22c55e}
+.pcard .ord-tag{position:absolute;top:9px;right:10px;font-size:10px;line-height:1.6;padding:0 7px;border-radius:10px;font-weight:600;white-space:nowrap}
+.pcard.ord-1w .ord-tag{background:#fee2e2;color:#b91c1c}
+.pcard.ord-2w .ord-tag{background:#dcfce7;color:#15803d}
+/* 门诊病种折叠头（可点击） */
+.dgrp{cursor:pointer;user-select:none}
+.dgrp .dgt{display:inline-block;transition:transform .15s;font-size:10px;margin-right:5px}
+.dgrp.collapsed .dgt{transform:rotate(-90deg)}
+/* 临时医嘱标识（列标题 / 表单） */
+.tempbadge{display:inline-block;margin-left:5px;font-size:10px;padding:0 5px;border-radius:6px;background:#fef3c7;color:#b45309;vertical-align:middle;font-weight:600}
+.med-temp-row{display:flex;align-items:center;gap:8px;margin:10px 0;font-size:14px;color:var(--text)}
+.med-temp-row input{width:18px;height:18px;flex:0 0 auto}
 .ghead.hidden-head{background:#f1f5f9}
 .ghead.hidden-head .gn{color:var(--text-sub);font-weight:500}
 .hidden-tip{margin:6px 16px 0;font-size:12px;color:var(--text-sub);line-height:1.6}
@@ -1269,11 +1281,13 @@ function listBodyHTML(list,type,showOrg){
     out+=listBodyHTML(opd,"outpatient",showOrg);
     return out;
   }
-  if(type==="outpatient"){
+    if(type==="outpatient"){
     var grps=groupOutpatients(list);
     grps.forEach(function(g){
-      out+='<div class="dgrp"><span class="dgc">'+g.list.length+'</span>'+esc(g.cat)+'</div>';
-      g.list.forEach(function(p){out+=pcardHTML(p,showOrg)});
+      var _k="dcat:"+g.cat,_c=state.collapsed[_k];
+      if(_c===undefined){state.collapsed[_k]=true;_c=true;}
+      out+='<div class="dgrp'+( _c?' collapsed':'')+'" data-action="toggle-dcat" data-cat="'+esc(g.cat)+'"><span class="dgt">▾</span><span class="dgc">'+g.list.length+'</span>'+esc(g.cat)+'</div>';
+      if(!_c)g.list.forEach(function(p){out+=pcardHTML(p,showOrg)});
     });
     return out;
   }
@@ -1323,14 +1337,14 @@ function renderPatientList(){
     if(!b)continue;
     var orgCount=0;for(var k in b.depts)orgCount+=b.depts[k].length;orgCount+=b.undept.length;
     if(!orgCount)continue;
-    var okey="org:"+org.id,ocol=state.collapsed[okey];
+    var okey="org:"+org.id;if(state.collapsed[okey]===undefined)state.collapsed[okey]=true;var ocol=state.collapsed[okey];
     html+='<div class="ghead'+(ocol?' collapsed':'')+'" data-action="toggle-org" data-oid="'+org.id+'"><span class="gc">'+orgCount+'</span><span class="gn">'+esc(org.name)+'</span><span class="gt">▾</span></div>';
     if(!ocol){
       var deptsSorted=org.depts.slice().sort(cmpDept);
       for(var di=0;di<deptsSorted.length;di++){
         var dept=deptsSorted[di],dl=b.depts[dept.id];
         if(!dl||!dl.length)continue;
-        var dkey="dept:"+org.id+":"+dept.id,dcol=state.collapsed[dkey];
+        var dkey="dept:"+org.id+":"+dept.id;if(state.collapsed[dkey]===undefined)state.collapsed[dkey]=true;var dcol=state.collapsed[dkey];
         var isOpd=dept.type==="outpatient";
         var dtag=isOpd?'<span class="dtype op">门诊</span>':'<span class="dtype">住院</span>';
         var dhint=isOpd?'<span class="sorthint">按病种</span>':'<span class="sorthint">按床位</span>';
@@ -1344,7 +1358,7 @@ function renderPatientList(){
     }
   }
   if(unassigned.length){
-    var ukey="org:__none",ucol=state.collapsed[ukey];
+    var ukey="org:__none";if(state.collapsed[ukey]===undefined)state.collapsed[ukey]=true;var ucol=state.collapsed[ukey];
     html+='<div class="ghead'+(ucol?' collapsed':'')+'" data-action="toggle-org" data-oid="__none"><span class="gc">'+unassigned.length+'</span><span class="gn">未分组</span><span class="gt">▾</span></div>';
     if(!ucol)html+=listBodyHTML(unassigned,"mixed",true);
   }
@@ -1371,7 +1385,14 @@ function pcardHTML(p,showOrg){
   var arch=isArchived(p);
   var nAdmit=admitCount(p),nMove=admissionsOf(p).length-nAdmit;
   var moveTip=nMove>0?' · 换床/转科 '+nMove+' 次':'';
-  return '<div class="pcard'+(arch?' arch':'')+'" data-action="open-patient" data-pid="'+p.id+'">'+
+  var ordCls="",ordTag="";
+  if(p.updatedAt){
+    var _d=(Date.now()-p.updatedAt)/86400000;
+    if(_d<=7){ordCls=" ord-1w";ordTag='<span class="ord-tag">近1周改动</span>'}
+    else if(_d<=14){ordCls=" ord-2w";ordTag='<span class="ord-tag">近2周改动</span>'}
+  }
+  return '<div class="pcard'+(arch?' arch':'')+ordCls+'" data-action="open-patient" data-pid="'+p.id+'">'+
+    ordTag+
     '<div class="row"><span class="pname">'+esc(p.name)+(arch?'<span class="status-pill out">已隐藏</span>':'')+'</span>'+
     '<span class="muted">'+esc(p.gender||"")+' '+(p.age?esc(p.age)+"岁":"")+'</span></div>'+
     (getCareType(p)==="outpatient"
@@ -1730,7 +1751,8 @@ function renderPatient(){
 function buildTimeline(p){
   var dates=p.rows.map(function(r){return r.date});
   (p.tdm||[]).forEach(function(t){if(dates.indexOf(t.date)<0)dates.push(t.date)});
-  dates.sort();
+  /* 日期行按时间倒序：最新日期在最上面（di=0） */
+  dates.sort(function(a,b){return a<b?1:-1});
   var rowMap={};p.rows.forEach(function(r){rowMap[r.date]=r});
   var tdmMap={};
   (p.tdm||[]).forEach(function(t){
@@ -1775,6 +1797,24 @@ function tdmClass(medName,recs){
   }
   return worst;
 }
+/* 某药最近一次「改动」时间：取 建/改医嘱时间 与 最近一次记录剂量(或停药)日期 的较大值；用于服药单药物列按时间倒序排列 */
+function medLastChange(p,m){
+  var t=(typeof m.updatedAt==="number")?m.updatedAt:0;
+  var rows=p.rows||[];
+  for(var i=0;i<rows.length;i++){
+    var row=rows[i]; if(!row||!row.cells)continue;
+    var cells=row.cells[m.id];
+    if(cells){
+      var has=false;
+      for(var k in cells){ if(cells[k]){has=true;break} }
+      if(has){
+        var dt=Date.parse(row.date);
+        if(!isNaN(dt)&&dt>t)t=dt;
+      }
+    }
+  }
+  return t;
+}
 function renderGridTab(p){
   var h='<div class="toolbar">'+
     '<button class="btn btn-sm" data-action="add-date">＋ 日期</button>'+
@@ -1786,6 +1826,8 @@ function renderGridTab(p){
     return h;
   }
   var meds=p.meds.filter(function(m){return !m.hidden});
+  /* 药物列按「最近一次改动」时间倒序：最新改动的药排在最前（最左）一列 */
+  meds.sort(function(a,b){return medLastChange(p,b)-medLastChange(p,a)});
   if(!meds.length){
     h+='<div class="empty">所有药物已隐藏，点下方「已隐藏药物」可恢复显示。</div>';
     h+=hiddenMedsHTML(p);
@@ -1795,8 +1837,8 @@ function renderGridTab(p){
   h+='<div class="grid-wrap"><table class="grid"><thead><tr><th class="corner">日期\\时间</th><th class="corner2"></th>';
   for(var i=0;i<meds.length;i++){
     var m=meds[i];
-    var isStopped=tl.dates.length&&tl.stopState[m.id][tl.dates.length-1];
-    h+='<th class="dcol" data-action="med-head" data-mid="'+m.id+'"><div class="dn'+(isStopped?' dn-stop':'')+'">'+esc(m.name)+(isStopped?'<span class="stopbadge">停</span>':'')+'</div><div class="df">'+esc(medSub(m))+'</div></th>';
+    var isStopped=tl.dates.length&&tl.stopState[m.id][0];
+    h+='<th class="dcol" data-action="med-head" data-mid="'+m.id+'"><div class="dn'+(isStopped?' dn-stop':'')+'">'+esc(m.name)+(isStopped?'<span class="stopbadge">停</span>':'')+(m.temp?'<span class="tempbadge">临时</span>':'')+'</div><div class="df">'+esc(medSub(m))+'</div></th>';
   }
   h+='</tr></thead><tbody>';
   if(!tl.dates.length){
@@ -1959,7 +2001,8 @@ function openMedConfig(name){
   '<datalist id="mc-form-list">'+["片剂","胶囊","针剂","口服液","口腔崩解片","透皮贴剂","栓剂","溶液","颗粒","混悬液"].map(function(x){return '<option value="'+x+'"></option>'}).join("")+'</datalist>'+
   '<datalist id="mc-strength-list">'+["0.5mg","1mg","2mg","5mg","10mg","25mg","50mg","100mg","200mg","0.25g","0.5g","1g"].map(function(x){return '<option value="'+x+'"></option>'}).join("")+'</datalist>'+
   (lib&&lib.tdm?'<div class="muted mt8">该药建议定期监测血药浓度（参考 '+lib.tdm.lo+'-'+lib.tdm.hi+' '+lib.tdm.u+'）</div>':'')+
-  '<div class="muted mt8">同一药品可多次添加不同剂型/规格（如 利培酮 1mg 片剂 + 利培酮 25mg 针剂）。</div>'+
+  '<div class="muted mt8">同一药品可多次添加不同剂型/规格（如 利培酮 1mg 片剂 + 利培酮 25mg 针剂）；中途换规格/剂型也用「＋药物」再加一条，旧记录自动保留。</div>'+
+  '<label class="med-temp-row"><input type="checkbox" id="mc-temp"> 临时医嘱（如每两周肌注一次，非长期口服）</label>'+
   '<div class="mt16"><button class="btn btn-block" data-action="med-confirm" data-name="'+esc(name)+'">添加到服药单</button></div></div>';
   openSheet(h);
   // 推荐预填：有历史则把最常用组合直接填进四个字段，可一键采纳或改选
@@ -1986,7 +2029,7 @@ function confirmAddMed(name){
   }
   var lib=findDrug(name);
   var freqVal=$("#mc-freq").value, routeVal=$("#mc-route").value;
-  p.meds.push({id:uid(),name:name,form:form,strength:strength,freq:freqVal,route:routeVal,doses:lib?lib.d.slice():[]});
+  p.meds.push({id:uid(),name:name,form:form,strength:strength,freq:freqVal,route:routeVal,doses:lib?lib.d.slice():[],temp:($("#mc-temp")&&$("#mc-temp").checked)?1:0,updatedAt:Date.now()});
   ensureDrug(name);
   touch(p);closeSheet();render();toast("已添加");
 }
@@ -2008,6 +2051,7 @@ function openMedSheet(mid){
   '<datalist id="mh-form-list">'+["片剂","胶囊","针剂","口服液","口腔崩解片","透皮贴剂","栓剂","溶液","颗粒","混悬液"].map(function(x){return '<option value="'+x+'"></option>'}).join("")+'</datalist>'+
   '<div class="field"><label>常用剂量（逗号分隔，点格子时可快捷选择）</label><input id="mh-doses" value="'+esc((m.doses||[]).join(","))+'"></div>'+
   (lib&&lib.tdm?'<div class="muted">血药浓度参考范围：'+lib.tdm.lo+'-'+lib.tdm.hi+' '+lib.tdm.u+(lib.tdm.ref?'（'+esc(lib.tdm.ref)+'）':'')+'</div>':'')+
+  '<label class="med-temp-row"><input type="checkbox" id="mh-temp"'+(m.temp?' checked':'')+'> 临时医嘱（如每两周肌注一次，非长期口服）</label>'+
   '<div class="mt16"><button class="btn btn-block" data-action="med-save" data-mid="'+mid+'">保存设置</button></div>'+
   '<div class="frow mt12">'+
   '<button class="btn btn-ghost grow" data-action="med-move" data-mid="'+mid+'" data-dir="-1">← 左移</button>'+
@@ -2021,9 +2065,10 @@ function saveMedSheet(mid){
   var p=getPatient(state.pid);
   var m=null;for(var i=0;i<p.meds.length;i++)if(p.meds[i].id===mid)m=p.meds[i];
   if(!m)return;
-  m.form=$("#mh-form").value.trim();m.strength=$("#mh-strength").value.trim();
+  m.form=$("#mh-form").value.trim();m.strength=$("#mh-strength").value.trim();m.temp=($("#mh-temp")&&$("#mh-temp").checked)?1:0;
   m.freq=$("#mh-freq").value;m.route=$("#mh-route").value;
   m.doses=$("#mh-doses").value.split(/[,，]/).map(function(s){return s.trim()}).filter(Boolean);
+  m.updatedAt=Date.now();
   touch(p);closeSheet();render();toast("已保存");
 }
 function moveMed(mid,dir){
@@ -2098,6 +2143,7 @@ function prevDoseValue(p,mid,slot,curDate){
 function setCell(val){
   var c=state.editCell;if(!c)return;
   var p=getPatient(state.pid);
+  var m=null;for(var i=0;i<p.meds.length;i++)if(p.meds[i].id===c.mid)m=p.meds[i];
   var row=null;
   if(c.rid){for(var j=0;j<p.rows.length;j++)if(p.rows[j].id===c.rid)row=p.rows[j]}
   else if(c.vdate){
@@ -2116,7 +2162,9 @@ function setCell(val){
   }
   if(!row.cells)row.cells={};
   if(!row.cells[c.mid])row.cells[c.mid]={m:"",n:"",e:""};
+  var _old=row.cells[c.mid][c.slot];
   row.cells[c.mid][c.slot]=val;
+  if(m&&val!==_old)m.updatedAt=Date.now();
   touch(p);closeSheet();render();
 }
 
@@ -2577,6 +2625,12 @@ document.addEventListener("click",function(e){
       state.collapsed["dept:"+doid+":"+ddid]=!state.collapsed["dept:"+doid+":"+ddid];
       renderPatientList();
       break;
+    case "toggle-dcat":{
+      var _dc=t.getAttribute("data-cat");
+      state.collapsed["dcat:"+_dc]=!state.collapsed["dcat:"+_dc];
+      renderPatientList();
+      break;
+    }
     case "edit-patient":openPatientForm(t.getAttribute("data-pid"));break;
     case "open-patient":state.pid=t.getAttribute("data-pid");state.view="patient";state.tab="grid";render();break;
     case "patient-save":savePatient(t.getAttribute("data-pid")||null);break;
