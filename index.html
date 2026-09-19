@@ -1781,19 +1781,47 @@ function buildTimeline(p){
   }
   return {dates:dates,rowMap:rowMap,tdmMap:tdmMap,stopState:stopState};
 }
-/* 血药浓度异常判定：返回 high / low / ok / "" */
+/* 血药浓度异常判定 */
+/* 取某条记录的有效正常范围：记录级 lo/hi > 备注里解析出的范围 > 药品库(单位一致时) */
+function parseRangeFromNote(note){
+  if(!note)return null;
+  var m=note.match(/(\d+(?:\.\d+)?)\s*(?:[-~–—]|至|到)\s*(\d+(?:\.\d+)?)/);
+  if(m){
+    var a=parseFloat(m[1]),b=parseFloat(m[2]);
+    // 排除像「2026-03」这类年份，浓度数值一般 <1000
+    if(isFinite(a)&&isFinite(b)&&a<1000&&b<1000&&a<b)return {lo:a,hi:b};
+  }
+  return null;
+}
+function tdmRangeOf(t){
+  if(t&&typeof t.lo==="number"&&typeof t.hi==="number"&&t.lo<=t.hi)return {lo:t.lo,hi:t.hi};
+  var rn=parseRangeFromNote(t&&t.note);
+  if(rn)return rn;
+  if(t){
+    var lib=findDrug(t.med);
+    if(lib&&lib.tdm&&lib.tdm.u===t.u)return {lo:lib.tdm.lo,hi:lib.tdm.hi};
+  }
+  return null;
+}
+/* 单条记录判定：high / low / ok / "" */
+function tdmClassOf(t){
+  if(!t)return "";
+  var v=parseFloat(t.value);
+  if(isNaN(v))return "";
+  var r=tdmRangeOf(t);
+  if(!r)return "";
+  if(v>r.hi)return "high";
+  if(v<r.lo)return "low";
+  return "ok";
+}
+/* 一组记录的汇总判定（worst）：high > low > ok；保持原签名供网格/打印调用 */
 function tdmClass(medName,recs){
-  var lib=findDrug(medName),worst="";
+  var worst="";
   for(var i=0;i<recs.length;i++){
-    var t=recs[i];
-    if(lib&&lib.tdm&&lib.tdm.u===t.u){
-      var v=parseFloat(t.value);
-      if(!isNaN(v)){
-        if(v>lib.tdm.hi)return "high";
-        if(v<lib.tdm.lo)worst="low";
-        else if(!worst)worst="ok";
-      }
-    }
+    var c=tdmClassOf(recs[i]);
+    if(c==="high")return "high";
+    if(c==="low")worst="low";
+    else if(c==="ok"&&!worst)worst="ok";
   }
   return worst;
 }
@@ -2182,20 +2210,20 @@ function renderTdmTab(p){
     var name=names[g];
     var recs=groups[name].slice().sort(function(a,b){return a.date<b.date?-1:1});
     var lib=findDrug(name);
+    var lastRec=recs.length?recs[recs.length-1]:null;
+    var lastU=lastRec?lastRec.u:"";
+    var grpRange=tdmRangeOf(lastRec)||(lib&&lib.tdm&&lib.tdm.u===lastU?{lo:lib.tdm.lo,hi:lib.tdm.hi}:null);
     h+='<div class="tdm-card"><div class="row"><span class="mn">'+esc(name)+'</span>';
-    if(lib&&lib.tdm)h+='<span class="range">参考 '+lib.tdm.lo+'-'+lib.tdm.hi+' '+lib.tdm.u+'</span>';
+    if(grpRange)h+='<span class="range">正常 '+grpRange.lo+'-'+grpRange.hi+' '+esc(lastU)+'</span>';
+    else if(lib&&lib.tdm)h+='<span class="range">参考 '+lib.tdm.lo+'-'+lib.tdm.hi+' '+lib.tdm.u+'</span>';
     h+='</div>';
-    if(recs.length>=2)h+=sparkline(recs,lib&&lib.tdm?lib.tdm:null);
+    if(recs.length>=2)h+=sparkline(recs,grpRange||(lib&&lib.tdm?lib.tdm:null));
     for(var r=recs.length-1;r>=0;r--){
       var t=recs[r];var badge="";
-      if(lib&&lib.tdm&&lib.tdm.u===t.u){
-        var v=parseFloat(t.value);
-        if(!isNaN(v)){
-          if(v<lib.tdm.lo)badge='<span class="badge badge-low">偏低</span>';
-          else if(v>lib.tdm.hi)badge='<span class="badge badge-high">偏高</span>';
-          else badge='<span class="badge badge-ok">正常</span>';
-        }
-      }
+      var c=tdmClassOf(t);
+      if(c==="high")badge='<span class="badge badge-high">偏高</span>';
+      else if(c==="low")badge='<span class="badge badge-low">偏低</span>';
+      else if(c==="ok")badge='<span class="badge badge-ok">正常</span>';
       h+='<div class="tdm-rec"><span class="d">'+esc(t.date)+'</span>'+
       '<span class="val">'+esc(t.value)+'</span><span class="u">'+esc(t.u)+'</span>'+badge+
       (t.note?'<span class="muted" style="margin-left:6px">'+esc(t.note)+'</span>':'')+
@@ -2242,6 +2270,8 @@ function openTdmForm(preMed,editId){
   var initValue=rec?rec.value:"";
   var initUnit=rec?rec.u:(findDrug(initMed)&&findDrug(initMed).tdm?findDrug(initMed).tdm.u:TDM_UNITS[0]);
   var initNote=rec?rec.note:"";
+  var initLo=rec&&rec.lo!=null?rec.lo:"";
+  var initHi=rec&&rec.hi!=null?rec.hi:"";
   var h='<div class="sheet-hd"><div class="t">'+(rec?'编辑':'添加')+'血药浓度</div><button class="x" data-action="sheet-close">✕</button></div><div class="sheet-bd">'+
   '<div class="field"><label>药物</label><select id="td-med">'+medNames.map(function(n){return '<option'+(n===initMed?' selected':'')+'>'+esc(n)+'</option>'}).join("")+'</select></div>'+
   '<div class="frow">'+
@@ -2251,6 +2281,11 @@ function openTdmForm(preMed,editId){
   '<div class="field"><label>结果</label><input id="td-value" type="number" step="any" placeholder="数值" value="'+esc(initValue)+'"></div>'+
   '<div class="field"><label>单位</label><select id="td-unit">'+TDM_UNITS.map(function(u){return '<option'+(u===initUnit?' selected':'')+'>'+u+'</option>'}).join("")+'</select></div>'+
   '</div>'+
+  '<div class="frow">'+
+  '<div class="field"><label>正常下限（可选）</label><input id="td-lo" type="number" step="any" placeholder="如 20" value="'+esc(initLo)+'"></div>'+
+  '<div class="field"><label>正常上限（可选）</label><input id="td-hi" type="number" step="any" placeholder="如 60" value="'+esc(initHi)+'"></div>'+
+  '</div>'+
+  '<div class="muted mt8">留空则自动套用该药参考范围；也可填入本次化验单上的范围。也可直接把范围写在备注里（如「20-60」），将自动识别。</div>'+
   '<div class="field"><label>备注（可选）</label><input id="td-note" placeholder="如 谷浓度 / 服药后12h" value="'+esc(initNote)+'"></div>'+
   sgBarHtml("💡 常用备注（点一下填入）",getTdmNoteSuggestion(5).map(function(x){
     return {label:x.val,count:x.count,attrs:{val:x.val}};
@@ -2259,21 +2294,25 @@ function openTdmForm(preMed,editId){
   openSheet(h);
   var medSel=$("#td-med"),unitSel=$("#td-unit");
   function syncUnit(){var lib=findDrug(medSel.value);if(lib&&lib.tdm)unitSel.value=lib.tdm.u}
-  medSel.addEventListener("change",syncUnit);
-  if(!rec)syncUnit();   // 编辑时保留原记录的单位，不随药品库自动覆盖
+  function syncRange(){var lib=findDrug(medSel.value);if(lib&&lib.tdm){if(!$("#td-lo").value)$("#td-lo").value=lib.tdm.lo;if(!$("#td-hi").value)$("#td-hi").value=lib.tdm.hi}}
+  medSel.addEventListener("change",function(){syncUnit();syncRange();});
+  if(!rec){syncUnit();syncRange();}   // 编辑时保留原记录的单位/范围，不随药品库自动覆盖
 }
 function saveTdm(){
   var p=getPatient(state.pid);
   var v=$("#td-value").value.trim();
   if(!v){toast("请填写检测结果");return}
   var med=$("#td-med").value,date=$("#td-date").value||today(),unit=$("#td-unit").value,note=$("#td-note").value.trim();
+  var loRaw=$("#td-lo").value.trim(),hiRaw=$("#td-hi").value.trim();
+  var loNum=isFinite(parseFloat(loRaw))?parseFloat(loRaw):undefined;
+  var hiNum=isFinite(parseFloat(hiRaw))?parseFloat(hiRaw):undefined;
   if(_editTdmId){
     var rec=null;for(var i=0;i<p.tdm.length;i++)if(p.tdm[i].id===_editTdmId){rec=p.tdm[i];break}
-    if(rec){rec.med=med;rec.date=date;rec.value=v;rec.u=unit;rec.note=note}
+    if(rec){rec.med=med;rec.date=date;rec.value=v;rec.u=unit;rec.note=note;rec.lo=loNum;rec.hi=hiNum}
     _editTdmId=null;
   }else{
     p.tdm=p.tdm||[];
-    p.tdm.push({id:uid(),med:med,date:date,value:v,u:unit,note:note});
+    p.tdm.push({id:uid(),med:med,date:date,value:v,u:unit,note:note,lo:loNum,hi:hiNum});
   }
   touch(p);closeSheet();state.tab="tdm";render();toast("已保存");
 }
