@@ -300,6 +300,11 @@ td.cell.tdm-ok .tv{color:#15803d}
 .scale-pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .lv{display:inline-block;padding:2px 10px;border-radius:20px;color:#fff;font-size:12px;margin-left:6px}
 .lv-red{background:#c0392b}.lv-orange{background:#e67e22}.lv-amber{background:#f39c12}.lv-green{background:#27ae60}
+.std-box{margin-top:8px;border:1px solid #eee;border-radius:10px;overflow:hidden}
+.std-row{display:flex;align-items:center;gap:10px;padding:7px 10px;border-bottom:1px solid #f0f0f0;font-size:13px}
+.std-row:last-child{border-bottom:none}
+.std-rng{font-weight:600;color:#333;min-width:104px;flex:0 0 auto}
+.std-txt{color:#666;flex:1}
 .mini-grid{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px}
 .mini-grid th,.mini-grid td{border:1px solid var(--line);padding:3px 6px;text-align:center}
 .mini-grid th{background:#f4f6f8;font-weight:600}
@@ -2935,17 +2940,42 @@ var SCALES=[
   note:"10 条目，每条 0-4 分，总分 0-40；前 5 项为强迫思维、后 5 项为强迫行为，各 0-20 分。"},
  {id:"scl90",name:"SCL-90 症状自评量表",cat:"其他常用",items:90,max:450,factors:[{key:"soma",name:"躯体化"},{key:"obs",name:"强迫"},{key:"interp",name:"人际敏感"},{key:"dep",name:"抑郁"},{key:"anx",name:"焦虑"},{key:"hos",name:"敌对"},{key:"phob",name:"恐怖"},{key:"para",name:"偏执"},{key:"psy",name:"精神病性"}],
   interpret:function(r){
-    var mean=r.mean!=null?r.mean:null;
-    if(mean==null&&r.total!=null){mean=(r.total<=5)?r.total:r.total/90;} /* 兼容旧记录：旧版 total 即总均分 */
-    if(mean==null)return {level:"",color:"",text:""};
-    var lvl,col,txt;
-    if(mean<=1){lvl="正常";col="green";txt="总均分正常"}
-    else if(mean<=2){lvl="轻度";col="amber";txt="轻度（因子分≥2 为阳性）"}
-    else if(mean<=3){lvl="中度";col="orange";txt="中度"}
-    else{lvl="重度";col="red";txt="重度"}
-    return {level:lvl,color:col,text:txt};
+    var S=scaleById("scl90");
+    var total=r.total!=null?(+r.total):null;
+    var mean=r.mean!=null?(+r.mean):null;
+    if(mean==null&&total!=null){mean=(total<=5)?total:total/90;} /* 兼容旧记录：旧版 total 即总均分 */
+    if(total==null&&mean==null)return {level:"",color:"",text:""};
+    var factors=r.factors||{},pos=[];
+    for(var k in factors){if(+factors[k]>=2)pos.push(k);}
+    var totalPos=(total!=null&&total>160);
+    /* 仅总均分（无总分）时的兜底分级 */
+    if(total==null){
+      if(mean>=3)return {level:"重度",color:"red",text:"总均分 "+mean.toFixed(2)+" ≥3，提示明显症状，建议临床评估。"};
+      if(mean>=2.5)return {level:"中度",color:"orange",text:"总均分 "+mean.toFixed(2)+" 2.5–3，提示中度症状。"};
+      if(mean>=2)return {level:"轻度",color:"amber",text:"总均分 "+mean.toFixed(2)+" ≥2，提示轻度症状倾向。"};
+      return {level:"正常",color:"green",text:"总均分 "+mean.toFixed(2)+" <2，未达阳性界值。"};
+    }
+    if(totalPos){
+      var lvl,col;
+      if(total>=300){lvl="重度";col="red";}
+      else if(total>=200){lvl="中度";col="orange";}
+      else {lvl="轻度";col="amber";}
+      var txt="总分 "+total+" 超过 160 筛查阳性界值";
+      if(pos.length)txt+="；阳性因子："+pos.map(function(k){return scaleFactorName(S,k)}).join("、");
+      txt+="（常用参考：160–199 轻度倾向，200–299 中度，≥300 重度）。";
+      return {level:lvl,color:col,text:txt};
+    }
+    if(pos.length){
+      return {level:"轻度",color:"amber",text:"总分未超 160，但以下因子分≥2 提示阳性："+pos.map(function(k){return scaleFactorName(S,k)}).join("、")+"。"};
+    }
+    return {level:"正常",color:"green",text:"总分 "+total+" 未超 160，各因子分均<2，未达异常界值。"};
   },
-  note:"量表总分=90 条目之和（范围 0-450，采用 1-5 评分时为 90-450）；总均分=总分÷90。任一因子分≥2 提示该因子阳性。"},
+  standards:[
+    {r:"总分 >160",l:"筛查阳性",c:"amber",t:"常用参考：160–199 轻度倾向，200–299 中度，≥300 重度"},
+    {r:"任一因子分 ≥2",l:"该因子阳性",c:"amber",t:"提示该维度症状达临床关注水平"},
+    {r:"总分 ≤160 且 因子<2",l:"未达异常界值",c:"green",t:"未见明显症状聚集"}
+  ],
+  note:"量表总分=90 条目之和（1–5 评分时范围 90–450）；总均分=总分÷90。任一因子分≥2 提示该因子阳性。"},
  {id:"epq",name:"EPQ 艾森克人格问卷（T分）",cat:"其他常用",items:88,max:100,factors:[{key:"E",name:"外向E"},{key:"N",name:"神经质N"},{key:"P",name:"精神质P"},{key:"L",name:"掩饰L"}],
   interpret:function(r){var f=r.factors||{};var out=[];["E","N","P","L"].forEach(function(k){var v=f[k];if(v==null)return;var hi=(k==="L"?60:61);if(v>=hi)out.push(k+"偏高("+v+")");else if(v<=39)out.push(k+"偏低("+v+")");});return {level:out.length?"特征明显":"居中",color:out.length?"amber":"green",text:out.length?out.join("、"):"各维度居中"};}},
  {id:"mmpi",name:"MMPI 明尼苏达多项人格测验（T分）",cat:"其他常用",items:399,max:120,factors:[{key:"hyp",name:"疑病Hs"},{key:"dep",name:"抑郁D"},{key:"hy",name:"癔病Hy"},{key:"pd",name:"精神病态Pd"},{key:"mf",name:"男子气/女子气Mf"},{key:"pa",name:"偏执Pa"},{key:"pt",name:"精神衰弱Pt"},{key:"sc",name:"精神分裂Sc"},{key:"ma",name:"轻躁狂Ma"},{key:"si",name:"社会内向Si"}],
@@ -2965,6 +2995,26 @@ function interpretScale(s,rec){
     var L=s.cutoffs[s.cutoffs.length-1];return {level:L.level,color:L.color,text:L.text};
   }
   return {level:"",color:"",text:""};
+}
+/* 测评结果页：渲染判读数值标准（轻/中/重度刻度） */
+function scaleStandardsHTML(s){
+  if(!s)return "";
+  var rows="";
+  if(s.standards&&s.standards.length){
+    for(var i=0;i<s.standards.length;i++){var c=s.standards[i];
+      rows+='<div class="std-row"><span class="lv lv-'+c.c+'">'+esc(c.l)+'</span><span class="std-rng">'+esc(c.r)+'</span><span class="std-txt">'+esc(c.t)+'</span></div>';
+    }
+    return '<div class="sect-t">判读标准（数值）</div><div class="std-box">'+rows+'</div>';
+  }
+  if(s.cutoffs&&s.cutoffs.length){
+    for(var i=0;i<s.cutoffs.length;i++){var c=s.cutoffs[i];
+      var rng = i===0 ? ("≤ "+c.max) : (i===s.cutoffs.length-1 ? ("≥ "+(s.cutoffs[i-1].max+1)) : ((s.cutoffs[i-1].max+1)+"–"+c.max));
+      rows+='<div class="std-row"><span class="lv lv-'+c.color+'">'+esc(c.level)+'</span><span class="std-rng">'+rng+'</span><span class="std-txt">'+esc(c.text)+'</span></div>';
+    }
+    return '<div class="sect-t">判读标准（数值）</div><div class="std-box">'+rows+'</div>';
+  }
+  if(s.note)return '<div class="sect-t">判读说明</div><div class="muted mt4">'+esc(s.note)+'</div>';
+  return "";
 }
 var _editScaleId=null; /* 正在编辑的测评记录 id；为空表示新增 */
 
@@ -3258,6 +3308,7 @@ function openScaleDetail(aid){
   if(a.items&&Object.keys(a.items).length){
     h+='<div class="sect-t">条目分</div><div class="muted">'+Object.keys(a.items).map(function(k){return k+":"+a.items[k]}).join("  ")+'</div>';
   }
+  h+=scaleStandardsHTML(s);
   h+='<div class="divider"></div><button class="btn btn-sm" data-action="scale-edit" data-aid="'+a.id+'">编辑</button> <button class="btn btn-sm" data-action="scale-print" data-aid="'+a.id+'">打印此测评单</button> <button class="btn btn-sm btn-danger" data-action="scale-del" data-aid="'+a.id+'">删除</button></div>';
   openSheet(h);
 }
@@ -3277,6 +3328,7 @@ function printScale(aid){
   var html='<html><head><meta charset="utf-8"><style>body{font-family:-apple-system,"PingFang SC",sans-serif;padding:28px;color:#222}'+
     'h2{margin:0 0 4px}.sub{color:#666;font-size:13px;margin-bottom:16px}.kv{display:flex;justify-content:space-between;border-bottom:1px dashed #ddd;padding:8px 0}'+
     '.lv{padding:2px 10px;border-radius:20px;color:#fff;font-size:13px}.lv-red{background:#c0392b}.lv-orange{background:#e67e22}.lv-amber{background:#f39c12}.lv-green{background:#27ae60}'+
+    '.std-box{margin-top:14px;border:1px solid #ddd;border-radius:10px;overflow:hidden}.std-row{display:flex;align-items:center;gap:10px;padding:7px 10px;border-bottom:1px solid #eee;font-size:13px}.std-row:last-child{border-bottom:none}.std-rng{font-weight:600;color:#333;min-width:104px;flex:0 0 auto}.std-txt{color:#666;flex:1}'+
     '.note{margin-top:14px;color:#555;font-size:13px}.tt{margin-top:24px;color:#999;font-size:12px}</style></head><body>'+
     '<h2>'+esc(s?s.name:a.scale)+'</h2>'+
     '<div class="sub">'+esc(org?org.name:"")+(dept?" · "+esc(dept.name):"")+' ｜ 病人：'+esc(p.name)+' ｜ 病案号：'+esc(p.recordNo||"")+'</div>'+
@@ -3285,6 +3337,7 @@ function printScale(aid){
     (a.mean!=null?'<div class="kv"><span>总均分</span><b>'+esc(a.mean)+'</b></div>':'');
   if(a.factors)for(var k in a.factors)html+='<div class="kv"><span>'+esc(scaleFactorName(s,k))+'</span><b>'+esc(a.factors[k])+'</b></div>';
   html+=(r.text?'<div class="note">判读：'+esc(r.text)+'</div>':'')+(s&&s.note?'<div class="note">备注：'+esc(s.note)+'</div>':'');
+  html+=scaleStandardsHTML(s);
   html+='<div class="tt">生成时间：'+new Date().toLocaleString()+'（判读仅供参考，请以临床判断为准）</div>';
   html+='</body></html>';
   var w=window.open("","_blank");if(!w){toast("请允许弹出窗口以打印");return}w.document.write(html);w.document.close();setTimeout(function(){w.print()},300);
